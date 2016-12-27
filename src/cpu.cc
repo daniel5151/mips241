@@ -53,6 +53,8 @@ uint32_t int64_to_uint32(int64_t x) {
 MIPS::CPU::CPU(MIPS::BUS & bus) : MEM(bus) 
 { 
   isExecuting = true;
+  cycles = 0;
+
   stage = S_FETCH;
 
   PC = 0x00000000;
@@ -74,10 +76,26 @@ MIPS::CPU::~CPU() {}
 
 bool MIPS::CPU::stillExecuting() { return isExecuting; }
 
-uint32_t MIPS::CPU::getRegister(int reg) { return R[reg]; }
 void MIPS::CPU::setRegister(int reg, uint32_t val) { R[reg] = val; }
 
-uint32_t MIPS::CPU::getPC() { return PC; };
+int      MIPS::CPU::getCycle()           { return cycles; }
+uint32_t MIPS::CPU::getPC()              { return PC;     }
+uint32_t MIPS::CPU::getRegister(int reg) { return R[reg]; }
+uint32_t MIPS::CPU::getiRegister(std::string reg) {
+  #define IREG(name_str, var) if (reg == name_str) return var;
+  IREG("RA", RA);
+  IREG("RB", RB);
+  IREG("RZ", RZ);
+  IREG("RM", RM);
+  IREG("RY", RY);
+  IREG("IR", IR);
+  IREG("PC", PC);
+  IREG("hi", hi);
+  IREG("lo", lo);
+  #undef IREG
+
+  return 0xBADA5555;
+}
 
 /* ------------------------- Static Helper Methods ------------------------- */
 
@@ -98,6 +116,7 @@ void MIPS::CPU::do_cycle() {
     case S_MEMORY: memory(); break;
     case S_WBACK : wback (); break;
   }
+  cycles++;
 }
 
 void MIPS::CPU::fetch() {

@@ -9,6 +9,7 @@
 namespace MIPS {
   class CPU {
     bool isExecuting;
+    int  cycles;
 
     // General Purpose Registers
     uint32_t R[32];
@@ -81,10 +82,12 @@ namespace MIPS {
 
     bool stillExecuting();
 
+    int      getCycle();
     uint32_t getRegister(int reg);
-    void setRegister(int reg, uint32_t val);
-
+    uint32_t getiRegister(std::string reg);
     uint32_t getPC();
+
+    void setRegister(int reg, uint32_t val);
 
     void do_cycle();
   };

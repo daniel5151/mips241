@@ -5,15 +5,18 @@
 #include "mem.h"
 #include "cpu.h"
 
-#include "disasm.h"
-
 namespace MIPS {
   class Debugger {
   private:
+    CPU & cpu;
+    RAM & ram;
+    BUS & bus;
   public:
-    Debugger();
+    Debugger(CPU & cpu, RAM & ram, BUS & bus);
     ~Debugger();
-  }
+
+    void debug();
+  };
 }
 
 #endif

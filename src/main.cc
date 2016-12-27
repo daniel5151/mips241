@@ -9,6 +9,8 @@
 #include "bus.h"
 #include "cpu.h"
 
+#include "debug.h"
+
 #define ever (;;)
 
 int readNum(std::istream & in) {
@@ -106,23 +108,15 @@ int main(int argc, char const *argv[]) {
   ram.printFrom(0x0, 32, std::cerr);
 
   // Start CPU execution
-  int cycle = 0;
+  MIPS::Debugger debugger (cpu, ram, bus);
+
   try {
     std::cerr << "Starting CPU..." << std::endl;
     do {
       // Execute cpu cycle
       cpu.do_cycle();
-      cycle++;
 
-      uint32_t startAddr = ((int)cpu.getPC() - 0x20 >= 0x0) ? cpu.getPC() - 0x20 : 0x0;
-      ram.printFrom(startAddr, 16, std::cerr, cpu.getPC());
-
-      ram.printFrom(cpu.getRegister(30) - 0x10, 12, std::cerr, cpu.getRegister(30));
-
-      cpu.printState(std::cerr);
-      std::cerr << "Cycle no. " << std::dec << cycle << std::endl << std::endl;
-      if (cycle % 5 == 0) 
-        getchar();
+      debugger.debug();
 
     } while (cpu.stillExecuting());
 
