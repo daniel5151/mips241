@@ -78,11 +78,10 @@ namespace MIPS {
 
     static void word2instr(uint32_t IR);
 
-    void printState(std::ostream & out);
-
     bool stillExecuting();
 
     int      getCycle();
+    int      getStage();
     uint32_t getRegister(int reg);
     uint32_t getiRegister(std::string reg);
     uint32_t getPC();

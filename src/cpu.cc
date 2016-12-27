@@ -5,12 +5,6 @@
 
 #include <cstdint>
 
-#include <iostream>
-#include <iomanip>
-
-#define COUTHEX(x) \
-  "0x" << std::setfill('0') << std::setw(8) << std::right << std::hex << x << std::dec
-
 int64_t uint32_to_int64(uint32_t x) {
   bool isNeg = x & 0x80000000;
   if (isNeg) {
@@ -79,6 +73,7 @@ bool MIPS::CPU::stillExecuting() { return isExecuting; }
 void MIPS::CPU::setRegister(int reg, uint32_t val) { R[reg] = val; }
 
 int      MIPS::CPU::getCycle()           { return cycles; }
+int      MIPS::CPU::getStage()           { return stage;  }
 uint32_t MIPS::CPU::getPC()              { return PC;     }
 uint32_t MIPS::CPU::getRegister(int reg) { return R[reg]; }
 uint32_t MIPS::CPU::getiRegister(std::string reg) {
@@ -126,8 +121,6 @@ void MIPS::CPU::fetch() {
     return;
   }
 
-  std::cerr << COUTHEX(PC) << " : ";
-
   // Do a memory read
   IR = MEM.load(PC);
 
@@ -146,8 +139,6 @@ void MIPS::CPU::decode() {
 
   RA = R[$s];
   RB = R[$t];
-
-  std::cerr << MIPS::disasm(IR) << std::endl;
 
   stage = S_EXEC;
 }
@@ -236,38 +227,16 @@ void MIPS::CPU::exec() {
 }
 
 void MIPS::CPU::memory() {
-  std::string indent = "                                   ";
   switch (MIPS::CPU::decodeOPcode(IR)) {
     case MIPS::CPU::OP_LW: {
       RY = MEM.load(RZ);
-
-      std::cerr 
-        << indent << "Load  : ["
-        << COUTHEX(RZ)
-        << "] = "
-        << COUTHEX(RY)
-        << std::endl;
     } break;
     case MIPS::CPU::OP_SW: {
-      std::cerr 
-        << indent << "Store : ["
-        << COUTHEX(RZ)
-        << "] <- "
-        << COUTHEX(RZ)
-        << std::endl;
-
       MEM.store(RZ, RM);
     } break;
 
     case MIPS::CPU::OP_LIS: {
       RY = MEM.load(RZ);
-
-      std::cerr 
-        << indent << "Load  : ["
-        << COUTHEX(RZ)
-        << "] = "
-        << COUTHEX(RY)
-        << std::endl;
     } break;
 
     default:
@@ -292,7 +261,6 @@ void MIPS::CPU::wback() {
       case OP_BNE:
       case OP_SW:
         // No writeback
-        // std::cerr << "  No Write Back" << std::endl;
         break;
       case OP_ADD:    
       case OP_SUB:
@@ -305,11 +273,9 @@ void MIPS::CPU::wback() {
         break;
       case OP_LW:
         // Writeback to $d
-        // std::cerr << "  Write Back to $" << (int)$d << std::endl;
         R[$t] = RY;
         break;
       case OP_JALR  :
-        // std::cerr << "  Write Back to $31" << std::endl;
         R[31] = RY;
         break;
   }
@@ -319,41 +285,4 @@ void MIPS::CPU::wback() {
 
 
   stage = S_FETCH;
-}
-
-
-/* ------------------------- CPU Utility Functions ------------------------- */
-
-void MIPS::CPU::printState(std::ostream & out) {
-  for (int i = 1; i < 32; i++) {
-    if (i % 4 - 1 == 0 && i != 0) {
-      out << std::endl;
-    }
-    out << std::setfill(' ') << ( (i % 4 - 1 != 0) ? "   " : "" ) << "$" 
-        << std::setw(2) << std::left << std::dec << i 
-        << " = " << COUTHEX(R[i]);
-  }
-
-  out << std:: endl;
-  out << " PC = " << COUTHEX(PC)
-      << "   "
-      << " IR = " << COUTHEX(IR)
-      << std::endl 
-      << std::endl;
-
-  out << " lo = " << COUTHEX(hi) << "   "
-      << " hi = " << COUTHEX(lo)
-      << std::endl 
-      << std::endl;
-
-  out << " RA = " << COUTHEX(RA) << "   "
-      << " RB = " << COUTHEX(RB) 
-      << std::endl;
-  out << " RZ = " << COUTHEX(RZ)
-      << std::endl;
-  out << " RM = " << COUTHEX(RM)
-      << std::endl;
-  out << " RY = " << COUTHEX(RY)
-      << std::endl;
-  out << "Stage: " << stage << std::endl;
 }

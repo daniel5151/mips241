@@ -105,33 +105,30 @@ int main(int argc, char const *argv[]) {
 
   std::cerr << std::endl;
 
-  ram.printFrom(0x0, 32, std::cerr);
-
   // Start CPU execution
   MIPS::Debugger debugger (cpu, ram, bus);
 
   try {
     std::cerr << "Starting CPU..." << std::endl;
     do {
+      debugger.debugREPL();
+
       // Execute cpu cycle
       cpu.do_cycle();
-
-      debugger.debug();
-
     } while (cpu.stillExecuting());
 
     std::cerr
       << std::endl
       << "Execution completed successfully!"
       << std::endl;
-    cpu.printState(std::cerr);
+    debugger.printCPUState();
 
   } catch (const std::string & msg) {
     std::cerr
       << "ERROR : "
       << msg
       << std::endl;
-    cpu.printState(std::cerr);
+    debugger.printCPUState();
   }
 
   return 0;

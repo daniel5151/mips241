@@ -13,8 +13,6 @@ namespace MIPS {
 
     void     store(uint32_t memaddr, uint32_t word);
     uint32_t load(uint32_t memaddr);
-
-    void printFrom(uint32_t addr, int n, std::ostream & out, uint32_t higlight = 0x1);
   };
 }
 

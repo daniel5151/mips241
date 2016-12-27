@@ -5,17 +5,34 @@
 #include "mem.h"
 #include "cpu.h"
 
+#include <map>
+#include <set>
+
+using namespace std;
+
 namespace MIPS {
   class Debugger {
   private:
     CPU & cpu;
     RAM & ram;
     BUS & bus;
+
+    map<uint32_t, char> higlight; // What to higlight in RAM
+
+    bool cycleStep; // If we want to step cycle-by-cycle
+    bool step;      // If we want to step instr-by-instr
+
+    set<uint32_t> breakpoints; // Which addresses to break on
+
+    string prevInput; // Previous REPL input
+
   public:
     Debugger(CPU & cpu, RAM & ram, BUS & bus);
     ~Debugger();
 
-    void debug();
+    void printCPUState();
+    void printRAMFrom(uint32_t addr, int n);
+    void debugREPL();
   };
 }
 
