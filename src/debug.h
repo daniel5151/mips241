@@ -23,6 +23,7 @@ namespace MIPS {
     bool step;      // If we want to step instr-by-instr
 
     set<uint32_t> breakpoints; // Which addresses to break on
+    set<uint32_t> watch;       // Which addresses to watch
 
     string prevInput; // Previous REPL input
 

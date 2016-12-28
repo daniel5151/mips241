@@ -102,6 +102,12 @@ void Debugger::printCPUState() {
     << endl;
 
   cerr << "Stage: " << cpu.getStage() << endl;
+
+  cerr
+    << "Cycle no. " 
+    << dec << cpu.getCycle() 
+    << endl;
+
 }
 
 void Debugger::print_stackRAM() {
@@ -147,16 +153,29 @@ void Debugger::print_CPU() {
 }
 
 void Debugger::debugPrint() {
+  // "clear" screen
+  cerr << string(100, '\n');
+
   print_stackRAM();
   print_progRAM();
   print_CPU();
 
-  // Printout CPU cycles
-  cerr 
-    << "Cycle no. " 
-    << dec << cpu.getCycle() 
-    << endl 
-    << endl;
+  if (!watch.empty()) {
+    cerr
+      << endl
+      << "     ADDR    |   HEXVAL   " << endl
+      << "  -----------|------------" << endl;
+    for (auto it = watch.begin(); it != watch.end(); it++) {
+      cerr 
+        << "  "
+        << toHex(*it) 
+        << " | "
+        << toHex(ram.load(*it))
+        << endl
+        << endl;
+
+    }
+  }
 }
 
 void Debugger::debugREPL() {
@@ -171,9 +190,6 @@ void Debugger::debugREPL() {
       // do the debug
     } else return;
   }
-
-  // "clear" screen
-  cerr << string(100, '\n');
 
   debugPrint();
 
@@ -203,21 +219,17 @@ void Debugger::debugREPL() {
         in_ss >> hex >> bp_addr;
         breakpoints.insert(bp_addr);
         higlight[bp_addr] = '!';
-
-        debugPrint();
       }
       else if (tok == "-bp") {
         uint32_t bp_addr;
         in_ss >> hex >> bp_addr;
         breakpoints.erase(bp_addr);
            higlight.erase(bp_addr);
-        
-        debugPrint();
       }
       else if (tok == "peek") {
         uint32_t memaddr;
         in_ss >> hex >> memaddr;
-        cout << toHex(bus.load(memaddr)) << endl;
+        cerr << toHex(bus.load(memaddr)) << endl;
       }
       else if (tok == "poke") {
         uint32_t memaddr;
@@ -227,6 +239,31 @@ void Debugger::debugREPL() {
           >> hex >> new_val;
 
         bus.store(memaddr, new_val);
+      } 
+      else if (tok == "+watch") {
+        uint32_t memaddr;
+        in_ss >> hex >> memaddr;
+        watch.insert(memaddr);
+      }
+      else if (tok == "-watch") {
+        uint32_t memaddr;
+        in_ss >> hex >> memaddr;
+        watch.erase(memaddr);
+      }
+      else if (tok == "print") {
+        debugPrint();
+      }
+      else if (tok == "help") {
+        cerr
+          << "  step              - exec one instruction"         << endl
+          << "  run               - resume regular execution"     << endl
+          << "  +bp <addr>        - add breakpoint at <addr>"     << endl
+          << "  -bp <addr>        - remove breakpoint at <addr>"  << endl
+          << "  peek <addr>       - print out contents of <addr>" << endl
+          << "  poke <addr> <val> - edit contents of <addr>"      << endl
+          << "  +watch <addr>     - keep an eye on <addr>"        << endl
+          << "  -watch <addr>     - don't keep an eye on <addr>"  << endl
+          << "  print             - dislpay debug data"           << endl;
       }
 
       else {
