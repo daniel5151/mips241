@@ -15,11 +15,15 @@
 
 #include "disasm.h"
 
-#define COUTHEX(x) \
-  "0x" << std::setfill('0') << std::setw(8) << std::right << std::hex << x << std::dec
-
 using namespace std;
 using namespace MIPS;
+
+template <typename T>
+string toHex(T const& x) {
+  ostringstream out;
+  out << "0x" << std::setfill('0') << std::setw(8) << std::hex << std::right << x;
+  return out.str();
+}
 
 Debugger::Debugger(CPU & cpu, RAM & ram, BUS & bus)
 : cpu(cpu), ram(ram), bus(bus)
@@ -44,9 +48,9 @@ void Debugger::printRAMFrom(uint32_t addr, int n) {
   while (n > 0) { 
     cerr 
       << ( (higlight.count(addr) != 0) ? higlight[addr] : ' ') << " "
-      << "0x" << setfill('0') << setw(8) << hex << addr 
+      << toHex(addr) 
       << " | "
-      << "0x" << setfill('0') << setw(8) << hex << ram.load(addr)
+      << toHex(ram.load(addr))
       << " : " 
       << disasm(ram.load(addr)) 
       << endl;
@@ -66,38 +70,93 @@ void Debugger::printCPUState() {
     cerr 
       << setfill(' ') << ( (i % 4 - 1 != 0) ? "   " : "" ) << "$" 
       << setw(2) << left << dec << i 
-      << " = " << COUTHEX(cpu.getRegister(i));
+      << " = " << toHex(cpu.getRegister(i));
   }
 
   cerr <<  endl;
   cerr 
-    << " PC = " << COUTHEX(cpu.getiRegister("PC"))
+    << " PC = " << toHex(cpu.getiRegister("PC"))
     << "   "
-    << " IR = " << COUTHEX(cpu.getiRegister("IR"))
+    << " IR = " << toHex(cpu.getiRegister("IR"))
     << endl 
     << endl;
 
   cerr 
-    << " lo = " << COUTHEX(cpu.getiRegister("hi")) << "   "
-    << " hi = " << COUTHEX(cpu.getiRegister("lo"))
+    << " lo = " << toHex(cpu.getiRegister("hi")) << "   "
+    << " hi = " << toHex(cpu.getiRegister("lo"))
     << endl 
     << endl;
 
   cerr 
-    << " RA = " << COUTHEX(cpu.getiRegister("RA")) << "   "
-    << " RB = " << COUTHEX(cpu.getiRegister("RB")) 
+    << " RA = " << toHex(cpu.getiRegister("RA")) << "   "
+    << " RB = " << toHex(cpu.getiRegister("RB")) 
     << endl;
   cerr 
-    << " RZ = " << COUTHEX(cpu.getiRegister("RZ"))
+    << " RZ = " << toHex(cpu.getiRegister("RZ"))
     << endl;
   cerr 
-    << " RM = " << COUTHEX(cpu.getiRegister("RM"))
+    << " RM = " << toHex(cpu.getiRegister("RM"))
     << endl;
   cerr 
-    << " RY = " << COUTHEX(cpu.getiRegister("RY"))
+    << " RY = " << toHex(cpu.getiRegister("RY"))
     << endl;
 
   cerr << "Stage: " << cpu.getStage() << endl;
+}
+
+void Debugger::print_stackRAM() {
+  bool oldHiglight_existed;
+  char oldHiglight;
+
+  cerr << "  ----------====== Stack RAM ======---------" << endl;
+  uint32_t stackPtr = cpu.getRegister(30);
+
+  oldHiglight_existed = (higlight.count(stackPtr) != 0);
+  oldHiglight = (oldHiglight_existed) ? higlight[stackPtr] : ' ';
+
+  higlight[stackPtr] = '>';
+  printRAMFrom(stackPtr - 0x10, 12);
+
+  if (oldHiglight_existed) higlight[stackPtr] = oldHiglight;
+  else higlight.erase(stackPtr);
+}
+
+void Debugger::print_progRAM() {
+  bool oldHiglight_existed;
+  char oldHiglight;
+
+  cerr << "  ---------====== Program RAM ======--------" << endl;
+  uint32_t currentPC = cpu.getPC();
+
+  oldHiglight_existed = (higlight.count(currentPC) != 0);
+  oldHiglight = (oldHiglight_existed) ? higlight[currentPC] : ' ';
+
+  higlight[currentPC] = '>';
+  uint32_t startAddr = ((int)currentPC - 0x20 >= 0x0) 
+    ? currentPC - 0x20
+    : 0x0;
+  printRAMFrom(startAddr, 16);
+
+  if (oldHiglight_existed) higlight[currentPC] = oldHiglight;
+  else higlight.erase(currentPC);
+}
+
+void Debugger::print_CPU() {
+  cerr << "-------------------------====== CPU State ======-------------------------";
+  printCPUState();
+}
+
+void Debugger::debugPrint() {
+  print_stackRAM();
+  print_progRAM();
+  print_CPU();
+
+  // Printout CPU cycles
+  cerr 
+    << "Cycle no. " 
+    << dec << cpu.getCycle() 
+    << endl 
+    << endl;
 }
 
 void Debugger::debugREPL() {
@@ -116,48 +175,7 @@ void Debugger::debugREPL() {
   // "clear" screen
   cerr << string(100, '\n');
 
-  bool oldHiglight_existed;
-  char oldHiglight;
-
-  // Printout Stack RAM
-  cerr << "  ----------====== Stack RAM ======---------" << endl;
-  uint32_t stackPtr = cpu.getRegister(30);
-
-  oldHiglight_existed = (higlight.count(stackPtr) != 0);
-  oldHiglight = (oldHiglight_existed) ? higlight[stackPtr] : ' ';
-
-  higlight[stackPtr] = '>';
-  printRAMFrom(stackPtr - 0x10, 12);
-
-  if (oldHiglight_existed) higlight[stackPtr] = oldHiglight;
-  else higlight.erase(stackPtr);
-
-  // Printout program RAM
-  cerr << "  ---------====== Program RAM ======--------" << endl;
-  uint32_t currentPC = cpu.getPC();
-
-  oldHiglight_existed = (higlight.count(currentPC) != 0);
-  oldHiglight = (oldHiglight_existed) ? higlight[currentPC] : ' ';
-
-  higlight[currentPC] = '>';
-  uint32_t startAddr = ((int)currentPC - 0x20 >= 0x0) 
-    ? currentPC - 0x20
-    : 0x0;
-  printRAMFrom(startAddr, 16);
-
-  if (oldHiglight_existed) higlight[currentPC] = oldHiglight;
-  else higlight.erase(currentPC);
-
-  // Printout CPU state
-  cerr << "-------------------------====== CPU State ======-------------------------";
-  printCPUState();
-
-  // Printout CPU cycles
-  cerr 
-    << "Cycle no. " 
-    << dec << cpu.getCycle() 
-    << endl 
-    << endl;
+  debugPrint();
 
   // the worst REPL you've ever seen
   for (;;) {
@@ -185,12 +203,30 @@ void Debugger::debugREPL() {
         in_ss >> hex >> bp_addr;
         breakpoints.insert(bp_addr);
         higlight[bp_addr] = '!';
+
+        debugPrint();
       }
       else if (tok == "-bp") {
         uint32_t bp_addr;
         in_ss >> hex >> bp_addr;
         breakpoints.erase(bp_addr);
            higlight.erase(bp_addr);
+        
+        debugPrint();
+      }
+      else if (tok == "peek") {
+        uint32_t memaddr;
+        in_ss >> hex >> memaddr;
+        cout << toHex(bus.load(memaddr)) << endl;
+      }
+      else if (tok == "poke") {
+        uint32_t memaddr;
+        uint32_t new_val;
+        in_ss 
+          >> hex >> memaddr
+          >> hex >> new_val;
+
+        bus.store(memaddr, new_val);
       }
 
       else {

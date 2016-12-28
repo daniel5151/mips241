@@ -26,6 +26,12 @@ namespace MIPS {
 
     string prevInput; // Previous REPL input
 
+    void print_CPU();
+    void print_stackRAM();
+    void print_progRAM();
+
+    void debugPrint();
+
   public:
     Debugger(CPU & cpu, RAM & ram, BUS & bus);
     ~Debugger();
