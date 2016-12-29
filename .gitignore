@@ -4,3 +4,7 @@
 /log
 
 /src/mips241
+
+/_disasm/alloc.asm
+/_disasm/alloc.merl
+/_disasm/disasm
