@@ -1,10 +1,5 @@
-/test.asm
-/test.mips
-/in
-/log
+/localtesting/*
 
-/src/mips241
-
-/_disasm/alloc.asm
-/_disasm/alloc.merl
 /_disasm/disasm
+
+/mips241
