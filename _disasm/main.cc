@@ -161,6 +161,9 @@ int main(int argc, char const *argv[]) {
         outLn << "    .word " << toHex(addr2export);
         outLines.push_back(outLn.str());
 
+        outLn = stringstream(); // clear stringstream
+        outLn << "    .word " << name_len;
+        outLines.push_back(outLn.str());
 
         for (int i = 0; i < name_len; i++) {
           outLn = stringstream(); // clear stringstream
@@ -208,6 +211,10 @@ int main(int argc, char const *argv[]) {
 
         outLn = stringstream(); // clear stringstream
         outLn << "    .word " << toHex(addr2import);
+        outLines.push_back(outLn.str());
+
+        outLn = stringstream(); // clear stringstream
+        outLn << "    .word " << name_len;
         outLines.push_back(outLn.str());
 
         for (int i = 0; i < name_len; i++) {
