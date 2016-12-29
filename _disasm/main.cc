@@ -3,6 +3,7 @@
 #include <sstream>
 #include <fstream>
 
+#include <map>
 #include <vector>
 
 #include <cstdint>
@@ -45,11 +46,13 @@ int main(int argc, char const *argv[]) {
   if (argc != 2) {
     cerr 
       << "Usage: ./disasm <filename>" 
-      ;
+      << endl;
     return -1;
   }
 
   vector<string> outLines;
+
+  map<int, int> branches; // <beq/bne line no, offset>
 
   // Load program
   ifstream bin (argv[1], ifstream::binary);
@@ -79,14 +82,14 @@ int main(int argc, char const *argv[]) {
     if (outLines.size() == 0 && word == 0x10000002) {
       isMERL = true;
       outLn 
-        << ".word 0x10000002" 
+        << "    .word 0x10000002" 
         << " ; MERL cookie";
       outLines.push_back(outLn.str());
     }
     else if (outLines.size() == 1 && isMERL) {
       fileLength = (int)word;
       outLn 
-        << ".word " << toHex(word)
+        << "    .word " << toHex(word)
         << " ; File Length (in bytes) is "
         << fileLength;
       outLines.push_back(outLn.str());
@@ -94,7 +97,7 @@ int main(int argc, char const *argv[]) {
     else if (outLines.size() == 2 && isMERL) {
       codeLength = (int)word;
       outLn 
-        << ".word " << toHex(word)
+        << "    .word " << toHex(word)
         << " ; Code Length (in bytes) is "
         << codeLength;
       outLines.push_back(outLn.str());
@@ -114,14 +117,11 @@ int main(int argc, char const *argv[]) {
           }
         }
 
-        outLn
-          << ".word 0x01       ; REL";
+        outLn << "    .word 0x01       ; REL";
         outLines.push_back(outLn.str());
 
         outLn = stringstream(); // clear stringstream
-        outLn
-          << ".word " << toHex(addr2relocate) 
-          << " ; === ln " << (int)(addr2relocate / 4 + 1);
+        outLn << "    .word " << toHex(addr2relocate);
         outLines.push_back(outLn.str());
 
         outLines[(int)(addr2relocate / 4)] += " ; REL'd";
@@ -153,21 +153,19 @@ int main(int argc, char const *argv[]) {
         }
 
         outLn 
-          << ".word 0x05       ; ESD - "
+          << "    .word 0x05       ; ESD - "
           << name;
         outLines.push_back(outLn.str());
 
         outLn = stringstream(); // clear stringstream
-        outLn 
-          << ".word " << toHex(addr2export) 
-          << " ; === ln " << (int)(addr2export / 4 + 1);
+        outLn << "    .word " << toHex(addr2export);
         outLines.push_back(outLn.str());
 
 
         for (int i = 0; i < name_len; i++) {
           outLn = stringstream(); // clear stringstream
           outLn 
-            << ".word " << setw(3) << left << (int)name[i] 
+            << "    .word " << setw(3) << left << (int)name[i] 
             << " ; " << name[i];
           outLines.push_back(outLn.str());
         }
@@ -204,20 +202,18 @@ int main(int argc, char const *argv[]) {
         }
 
         outLn 
-          << ".word 0x11       ; ESR - "
+          << "    .word 0x11       ; ESR - "
           << name;
         outLines.push_back(outLn.str());
 
         outLn = stringstream(); // clear stringstream
-        outLn 
-          << ".word " << toHex(addr2import) 
-          << " ; === ln " << (int)(addr2import / 4 + 1);
+        outLn << "    .word " << toHex(addr2import);
         outLines.push_back(outLn.str());
 
         for (int i = 0; i < name_len; i++) {
           outLn = stringstream(); // clear stringstream
           outLn 
-            << ".word " << setw(3) << left << (int)name[i] 
+            << "    .word " << setw(3) << left << (int)name[i] 
             << " ; " << name[i];
           outLines.push_back(outLn.str());
         }
@@ -229,14 +225,18 @@ int main(int argc, char const *argv[]) {
       }
     }
     else {
-      string disasmLn = MIPS::disasm(word);
-      outLines.push_back(disasmLn);
+      // Not MERL Stuff
+      string         disasmLn      (MIPS::disasm(word));
+      stringstream   disasmLn_ss   (disasmLn);
+      vector<string> disasmLn_toks ;
+      
+      string buf;
+      while (disasmLn_ss >> buf)
+        disasmLn_toks.push_back(buf);
 
-      if ( // I know, I know, but hey, whatever works?
-        disasmLn[0] == 'l' &&
-        disasmLn[1] == 'i' &&
-        disasmLn[2] == 's'
-      ) {
+      if (disasmLn_toks[0] == "lis") {
+        outLines.push_back("    " + disasmLn);
+
         uint32_t lisVal;
         try { lisVal = readMIPSbyte(bin); } 
         catch (const string & msg) {
@@ -248,13 +248,57 @@ int main(int argc, char const *argv[]) {
             break;
           }
         }
-        outLn 
-          << ".word " << toHex(lisVal);
+        outLn << "    .word " << toHex(lisVal);
         outLines.push_back(outLn.str());
+      } 
+      // else if (disasmLn_toks[0] == "bne" || disasmLn_toks[0] == "beq") {
+      //   stringstream offset_ss (disasmLn_toks.back());
+      //   int offset;
+      //   offset_ss >> offset;
+
+      //   branches[outLines.size()] = branches.size();
+        
+      //   outLn << "    " << disasmLn_toks[0] << "   ";
+      //   for (auto it = disasmLn_toks.begin() + 1; it != disasmLn_toks.end() - 1; it++)
+      //     outLn << *it << " ";
+      //   outLn << "loop"; // Gets filled in later
+        
+      //   outLines.push_back(outLn.str());
+      // } 
+      else if (disasmLn == "jr    $31") {
+        outLines.push_back("    " + disasmLn + "\n\n\n\n");
+      }
+      else {
+        outLines.push_back("    " + disasmLn);
       }
     }
   }
 
+  // Fill in branches
+  // map<int, int> branch_targets; // <branch target ln, id>
+  // for (auto it = branches.begin(); it != branches.end(); it++) {
+  //   // Calculate branch target
+  //   int target = it->first + it->second;
+
+  //   // Add it to the targets map if it's not there yet, or use the existing
+  //   //  branch id
+  //   if (branch_targets.count(target) == 0)
+  //     branch_targets[target] = branch_targets.size();
+
+  //   // Add loop id to beq / bne instruction
+  //   stringstream id_stoi; 
+  //   id_stoi << branch_targets[target];
+  //   outLines[it->first] += id_stoi.str();
+  // }
+
+  // for (auto it = branch_targets.begin(); it != branch_targets.end(); it++) {
+  //   stringstream id_stoi;
+  //   id_stoi << it->second;
+
+  //   outLines[it->first] = "loop" + id_stoi.str() + ":\n" + outLines[it->first];
+  // }
+
+  // Output all of our hard work
   for (auto it = outLines.begin(); it != outLines.end(); it++)
     cout << *it << endl;
 
