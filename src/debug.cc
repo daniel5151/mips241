@@ -21,7 +21,7 @@ using namespace MIPS;
 template <typename T>
 string toHex(T const& x) {
   ostringstream out;
-  out << "0x" << std::setfill('0') << std::setw(8) << std::hex << std::right << x;
+  out << "0x" << setfill('0') << setw(8) << hex << right << x;
   return out.str();
 }
 
@@ -36,7 +36,7 @@ Debugger::Debugger(CPU & cpu, RAM & ram, BUS & bus)
 
   // Break at the start of the program
   breakpoints.insert(0x00000000);
-};
+}
 
 Debugger::~Debugger() {}
 

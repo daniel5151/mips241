@@ -6,23 +6,20 @@
 #include <cstdint>
 
 MIPS::CPU::CPU(MIPS::BUS & bus) : MEM(bus) 
-{ 
+{
+  // Internal flags and tracking vars
   isExecuting = true;
   cycles = 0;
-
   stage = S_FETCH;
 
+  // Setup registers
   PC = 0x00000000;
-
   hi = lo = 0;
   RA = RB = RZ = RM = RY = 0;
+  for (int i = 0; i < 32; i++) R[i] = 0;
 
-
-  for (int i = 0; i < 32; i++) 
-    R[i] = 0;
-
-  R[31] = 0x8123456C;
-  R[30] = 0x01000000;
+  R[31] = 0x8123456C; // Exit address
+  R[30] = 0x01000000; // Start of Stack
 }
 
 MIPS::CPU::~CPU() {}
@@ -39,21 +36,21 @@ uint32_t MIPS::CPU::getPC()              { return PC;     }
 uint32_t MIPS::CPU::getRegister(int reg) { return R[reg]; }
 uint32_t MIPS::CPU::getiRegister(std::string reg) {
   #define IREG(name_str, var) if (reg == name_str) return var;
-  IREG("RA", RA);
-  IREG("RB", RB);
-  IREG("RZ", RZ);
-  IREG("RM", RM);
-  IREG("RY", RY);
-  IREG("IR", IR);
-  IREG("PC", PC);
-  IREG("hi", hi);
-  IREG("lo", lo);
+    IREG("RA", RA);
+    IREG("RB", RB);
+    IREG("RZ", RZ);
+    IREG("RM", RM);
+    IREG("RY", RY);
+    IREG("IR", IR);
+    IREG("PC", PC);
+    IREG("hi", hi);
+    IREG("lo", lo);
   #undef IREG
 
   return 0xBADA5555;
 }
 
-/* ------------------------- Static Helper Methods ------------------------- */
+/* ---------------------------- Helper Methods ----------------------------- */
 
 uint32_t MIPS::CPU::decodeOPcode(uint32_t IR) {
   bool hasImmediateValue = (IR >> 26) != 0;
@@ -110,71 +107,71 @@ void MIPS::CPU::exec() {
   int32_t RB_s = static_cast<int32_t>(RB);
   int16_t imm  = static_cast<int16_t>(IR & 0xFFFF);
 
-  uint32_t opcode = MIPS::CPU::decodeOPcode(IR);
+  uint32_t opcode = decodeOPcode(IR);
 
   switch (opcode) {
     /* Arithmetic */
-    case MIPS::CPU::OP_ADD:   
+    case OP_ADD:   
       RZ = static_cast<uint32_t>(RA_s + RB_s);
       break;      
-    case MIPS::CPU::OP_SUB:   
+    case OP_SUB:   
       RZ = static_cast<uint32_t>(RA_s - RB_s);
       break;  
-    case MIPS::CPU::OP_SLT:   
+    case OP_SLT:   
       RZ = static_cast<uint32_t>(RA_s < RB_s);
       break;  
-    case MIPS::CPU::OP_SLTU:   
+    case OP_SLTU:   
       RZ = RA < RB;
       break; 
-    case MIPS::CPU::OP_MFHI:   
+    case OP_MFHI:   
       RZ = hi;
       break; 
-    case MIPS::CPU::OP_MFLO:   
+    case OP_MFLO:   
       RZ = lo;
       break; 
-    case MIPS::CPU::OP_MULT:  
+    case OP_MULT:  
       lo = (static_cast<int64_t>(RA_s) * static_cast<int64_t>(RB_s));
       hi = (static_cast<int64_t>(RA_s) * static_cast<int64_t>(RB_s)) >> 32;
       break; 
-    case MIPS::CPU::OP_MULTU:   
+    case OP_MULTU:   
       lo = (static_cast<uint64_t>(RA) * static_cast<uint64_t>(RB));            
       hi = (static_cast<uint64_t>(RA) * static_cast<uint64_t>(RB)) >> 32;
       break;
-    case MIPS::CPU::OP_DIV:   
+    case OP_DIV:   
       lo = RA_s / RB_s;           
       hi = RA_s % RB_s;
       break;  
-    case MIPS::CPU::OP_DIVU:   
+    case OP_DIVU:   
       lo = RA / RB;             
       hi = RA % RB;
       break;
 
     /* Jumps and Branches */
-    case MIPS::CPU::OP_JR:  
+    case OP_JR:  
       PC = RA;
       break;
-    case MIPS::CPU::OP_JALR:  
+    case OP_JALR:  
       RZ = PC;
       PC = RA;
       break;
-    case MIPS::CPU::OP_BEQ:  
+    case OP_BEQ:  
       PC += (RA == RB) ? imm * 4 : 0;
       break;
-    case MIPS::CPU::OP_BNE:  
+    case OP_BNE:  
       PC += (RA != RB) ? imm * 4 : 0;
       break;
 
     /* Loads and Stores */
-    case MIPS::CPU::OP_SW:   
+    case OP_SW:   
       RZ = RA + imm;
       RM = RB;
       break;
-    case MIPS::CPU::OP_LW:   
+    case OP_LW:   
       RZ = RA + imm;
       break;
 
     /* Load Immediate Store */
-    case MIPS::CPU::OP_LIS:  
+    case OP_LIS:  
       RZ = PC; 
       PC += 4;
       break;
@@ -188,18 +185,14 @@ void MIPS::CPU::exec() {
 }
 
 void MIPS::CPU::memory() {
-  switch (MIPS::CPU::decodeOPcode(IR)) {
-    case MIPS::CPU::OP_LW:  
-      RY = MEM.load(RZ);
+  switch (decodeOPcode(IR)) {
+    case OP_LIS:
+    case OP_LW: 
+      RY = MEM.load(RZ); 
       break;
-    case MIPS::CPU::OP_SW:  
-      MEM.store(RZ, RM);
+    case OP_SW:
+      MEM.store(RZ, RM); 
       break;
-
-    case MIPS::CPU::OP_LIS:  
-      RY = MEM.load(RZ);
-      break;
-
     default:
       RY = RZ;
       break;
@@ -212,7 +205,7 @@ void MIPS::CPU::wback() {
   int $d = (IR >> 11) & 0x1F;
   int $t = (IR >> 16) & 0x1F;
 
-  switch (MIPS::CPU::decodeOPcode(IR)) {
+  switch (decodeOPcode(IR)) {
       case OP_MULT:
       case OP_MULTU:
       case OP_DIV:
@@ -230,20 +223,18 @@ void MIPS::CPU::wback() {
       case OP_MFHI:
       case OP_MFLO:
       case OP_LIS:
-        R[$d] = RY;
+        // Writeback to $d
+        if ($d != 0) R[$d] = RY;
         break;
       case OP_LW:
-        // Writeback to $d
-        R[$t] = RY;
+        // Writeback to $t
+        if ($t != 0) R[$t] = RY;
         break;
       case OP_JALR  :
+        // Writeback to $31
         R[31] = RY;
         break;
   }
-
-
-
-
 
   stage = S_FETCH;
 }

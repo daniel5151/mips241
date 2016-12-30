@@ -29,7 +29,7 @@ void MIPS::RAM::store(uint32_t memaddr, uint32_t word) {
   }
 
   mem[page][offset / 4] = word;
-};
+}
 
 uint32_t MIPS::RAM::load(uint32_t memaddr) {
   if (memaddr % 4 != 0) {
@@ -45,4 +45,4 @@ uint32_t MIPS::RAM::load(uint32_t memaddr) {
   }
 
   return mem[page][offset / 4];
-};
+}

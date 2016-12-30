@@ -1,5 +1,7 @@
-/localtesting/*
+/localtesting/
 
 /_disasm/disasm
 
-/mips241
+/src/mips241
+/src/.d/
+/src/.o/

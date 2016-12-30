@@ -128,8 +128,7 @@ int main(int argc, char const *argv[]) {
   try {
     std::cerr << "Starting CPU..." << std::endl;
     do {
-      if (debugmode) 
-        debugger.debugREPL();
+      if (debugmode) debugger.debugREPL();
 
       // Execute cpu cycle
       cpu.do_cycle();
@@ -146,6 +145,7 @@ int main(int argc, char const *argv[]) {
       << msg
       << std::endl;
     debugger.printCPUState();
+    return -1;
   }
 
   return 0;

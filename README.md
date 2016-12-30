@@ -1,9 +1,16 @@
 # mips241
-An emulator for the MIPS system used in CS 241 @ uWaterloo
+### A MIPS system emulator for CS 241 @ uWaterloo
 
-No guarantees that it's perfect and/or bug-free, but hey, at least it's free ¯\\\_(ツ)\_/¯
+To Build: `make` inside the `src` directory<br>
+To Run: `./mips241 <filename> [-twoints] [--debug]`
 
-Aside from running faster than `java mips.twoints` / `java mips.array` (looking at you *java*), it also has a plethora of useful debugging features! 
+(running without `-twoints` results in `java mips.array` functionality)
+
+### Why use this thing?
+
+Aside from running faster than `java mips.twoints` / `java mips.array` (looking 
+at you *java*), `mips241` also comes with a plethora of useful ***debugging 
+features!***
 
 Starting the emulator with the `--debug` flag throws you into a debug interface
 that looks a little something like this:
@@ -82,7 +89,7 @@ poke <addr> <val> - edit contents of <addr>
 print             - display debug data
 ```
 
-# \_disasm
+# disasm
 
 Also included is a standalone disassembler. Give it your `.mips` or `.merl`
 files, and it'll spit out a `.asm` file.
@@ -96,3 +103,20 @@ Why?
 Well, I wanted to make it so that at some point in the future I could have taken
 a crack at pipelining this emulated processor. I never did, but if any of you
 Software Engineers out there want to take a shot at doing that, go ahead!
+
+# Disclaimers and Troubleshooting
+
+I provide no guarantees that this is perfect and/or bug-free, but hey, at least 
+it's free ¯\\\_(ツ)\_/¯
+
+Oh, also, i've only tested this on Linux (#chromebooklife), but OSX should work 
+fine.
+Windows on the other hand...
+
+Also, if the Makefile doesn't work, you can manually build the thing with <br>
+`g++ -Wall -std=c++11 -o mips241 bus.cc cpu.cc main.cc debug.cc disasm.cc mem.cc`
+
+####\- Daniel Prilik 2016 (http://prilik.ca)
+
+**Also, Feel free to modify this code however you like!<br>
+If you improve `mips241` or fix a bug, open a a Pull Request!**
