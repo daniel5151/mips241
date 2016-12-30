@@ -212,8 +212,16 @@ void Debugger::debugREPL() {
 
     string tok;
     while (in_ss >> tok) {
-           if (tok == "step") { step = true;  return; } 
-      else if (tok == "run")  { step = false; return; }
+      if (tok == "step") { 
+        step = true;  return; 
+      } 
+      else if (tok == "run")  { 
+        step = false; 
+        
+        // "clear" screen
+        cerr << string(100, '\n');
+        return; 
+      }
       else if (tok == "+bp") {
         uint32_t bp_addr;
         in_ss >> hex >> bp_addr;

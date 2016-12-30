@@ -10,7 +10,15 @@ MIPS::BUS::~BUS() {}
 uint32_t MIPS::BUS::load(uint32_t addr) {
   // Check if we are using any memory mapped I/O
   if (addr == 0xFFFF0004) {
-    return getchar();
+    if (inputBuffer.empty()) {
+      std::string input;
+      getline(std::cin, input);
+      for (uint i = 0; i < input.length(); i++)
+        inputBuffer.push_back(input[i]);
+    }
+    char in = inputBuffer.front();
+    inputBuffer.pop_front();
+    return in;
   } else {
     return mem.load(addr);
   }

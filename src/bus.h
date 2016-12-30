@@ -2,6 +2,7 @@
 #define BUS_H_
 
 #include <cstdint>
+#include <deque>
 
 #include "mem.h"
 
@@ -9,6 +10,8 @@ namespace MIPS {
   class BUS {
   private:
     RAM & mem;
+
+    std::deque<char> inputBuffer;
   public:
     BUS(RAM & mem);
     ~BUS();
