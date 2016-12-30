@@ -15,7 +15,7 @@
 
 #define ever (;;)
 
-int readNum(std::istream & in) {
+uint32_t readNum(std::istream & in) {
   std::string n_str;
 
   in >> n_str;
@@ -23,7 +23,7 @@ int readNum(std::istream & in) {
 
   bool isDec = (n_str.length() < 2) || (n_str[0] != '0');
 
-  int x;
+  uint32_t x;
   n_ss >> ( (isDec) ? std::dec : std::hex ) >> x;
 
   return x;

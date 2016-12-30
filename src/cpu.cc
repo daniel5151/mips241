@@ -5,45 +5,6 @@
 
 #include <cstdint>
 
-int64_t uint32_to_int64(uint32_t x) {
-  bool isNeg = x & 0x80000000;
-  if (isNeg) {
-    x -= 1;
-    x = ~x;
-    return -( (int64_t)x );
-  }
-
-  return x;
-}
-
-int32_t uint16_to_int32(uint16_t x) {
-  bool isNeg = x & 0x8000;
-  if (isNeg) {
-    x -= 1;
-    x = ~x;
-    return -( (int32_t)x );
-  }
-  return x;
-}
-
-uint32_t int64_to_uint32(int64_t x) {
-  if (x < 0) {
-    uint32_t nx;
-    nx = -x;
-    nx = ~nx;
-    nx += 1;
-    return nx;
-  }
-  return x;
-}
-
-
-
-
-
-
-
-
 MIPS::CPU::CPU(MIPS::BUS & bus) : MEM(bus) 
 { 
   isExecuting = true;
@@ -144,79 +105,79 @@ void MIPS::CPU::decode() {
 }
 
 void MIPS::CPU::exec() {
-  int64_t RA_s = uint32_to_int64(RA); // Get signed value
-  int64_t RB_s = uint32_to_int64(RB); // Get signed value
-
-  int32_t imm = uint16_to_int32( IR & 0xFFFF );
+  // Get signed values
+  int32_t RA_s = static_cast<int32_t>(RA);
+  int32_t RB_s = static_cast<int32_t>(RB);
+  int16_t imm  = static_cast<int16_t>(IR & 0xFFFF);
 
   uint32_t opcode = MIPS::CPU::decodeOPcode(IR);
 
   switch (opcode) {
     /* Arithmetic */
-    case MIPS::CPU::OP_ADD: { 
-      RZ = int64_to_uint32(RA_s + RB_s);
-    } break;      
-    case MIPS::CPU::OP_SUB: { 
-      RZ = int64_to_uint32(RA_s - RB_s);
-    } break;  
-    case MIPS::CPU::OP_SLT: { 
-      RZ = int64_to_uint32(RA_s < RB_s);
-    } break;  
-    case MIPS::CPU::OP_SLTU: { 
+    case MIPS::CPU::OP_ADD:   
+      RZ = static_cast<uint32_t>(RA_s + RB_s);
+      break;      
+    case MIPS::CPU::OP_SUB:   
+      RZ = static_cast<uint32_t>(RA_s - RB_s);
+      break;  
+    case MIPS::CPU::OP_SLT:   
+      RZ = static_cast<uint32_t>(RA_s < RB_s);
+      break;  
+    case MIPS::CPU::OP_SLTU:   
       RZ = RA < RB;
-    } break; 
-    case MIPS::CPU::OP_MFHI: { 
+      break; 
+    case MIPS::CPU::OP_MFHI:   
       RZ = hi;
-    } break; 
-    case MIPS::CPU::OP_MFLO: { 
+      break; 
+    case MIPS::CPU::OP_MFLO:   
       RZ = lo;
-    } break; 
-    case MIPS::CPU::OP_MULT: { 
-      lo = int64_to_uint32(RA_s * RB_s);        
-      hi = int64_to_uint32((RA_s * RB_s) >> 32); 
-    } break; 
-    case MIPS::CPU::OP_MULTU: { 
-      lo =  (uint64_t)RA * (uint64_t)RB;            
-      hi = ((uint64_t)RA * (uint64_t)RB) >> 32;
-    } break;
-    case MIPS::CPU::OP_DIV: { 
-      lo = int64_to_uint32(RA_s / RB_s);           
-      hi = int64_to_uint32(RA_s % RB_s);
-    } break;  
-    case MIPS::CPU::OP_DIVU: { 
+      break; 
+    case MIPS::CPU::OP_MULT:  
+      lo = (static_cast<int64_t>(RA_s) * static_cast<int64_t>(RB_s));
+      hi = (static_cast<int64_t>(RA_s) * static_cast<int64_t>(RB_s)) >> 32;
+      break; 
+    case MIPS::CPU::OP_MULTU:   
+      lo = (static_cast<uint64_t>(RA) * static_cast<uint64_t>(RB));            
+      hi = (static_cast<uint64_t>(RA) * static_cast<uint64_t>(RB)) >> 32;
+      break;
+    case MIPS::CPU::OP_DIV:   
+      lo = RA_s / RB_s;           
+      hi = RA_s % RB_s;
+      break;  
+    case MIPS::CPU::OP_DIVU:   
       lo = RA / RB;             
       hi = RA % RB;
-    } break;
+      break;
 
     /* Jumps and Branches */
-    case MIPS::CPU::OP_JR: {
+    case MIPS::CPU::OP_JR:  
       PC = RA;
-    } break;
-    case MIPS::CPU::OP_JALR: {
+      break;
+    case MIPS::CPU::OP_JALR:  
       RZ = PC;
       PC = RA;
-    } break;
-    case MIPS::CPU::OP_BEQ: {
+      break;
+    case MIPS::CPU::OP_BEQ:  
       PC += (RA == RB) ? imm * 4 : 0;
-    } break;
-    case MIPS::CPU::OP_BNE: {
+      break;
+    case MIPS::CPU::OP_BNE:  
       PC += (RA != RB) ? imm * 4 : 0;
-    } break;
+      break;
 
     /* Loads and Stores */
-    case MIPS::CPU::OP_SW: { 
+    case MIPS::CPU::OP_SW:   
       RZ = RA + imm;
       RM = RB;
-    } break;
-    case MIPS::CPU::OP_LW: { 
+      break;
+    case MIPS::CPU::OP_LW:   
       RZ = RA + imm;
-    } break;
+      break;
 
     /* Load Immediate Store */
-    case MIPS::CPU::OP_LIS: {
+    case MIPS::CPU::OP_LIS:  
       RZ = PC; 
       PC += 4;
-    } break;
+      break;
 
     default: 
       throw std::string("Invalid opcode"); 
@@ -228,16 +189,16 @@ void MIPS::CPU::exec() {
 
 void MIPS::CPU::memory() {
   switch (MIPS::CPU::decodeOPcode(IR)) {
-    case MIPS::CPU::OP_LW: {
+    case MIPS::CPU::OP_LW:  
       RY = MEM.load(RZ);
-    } break;
-    case MIPS::CPU::OP_SW: {
+      break;
+    case MIPS::CPU::OP_SW:  
       MEM.store(RZ, RM);
-    } break;
+      break;
 
-    case MIPS::CPU::OP_LIS: {
+    case MIPS::CPU::OP_LIS:  
       RY = MEM.load(RZ);
-    } break;
+      break;
 
     default:
       RY = RZ;
