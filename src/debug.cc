@@ -82,8 +82,8 @@ void Debugger::printCPUState() {
     << endl;
 
   cerr 
-    << " lo = " << toHex(cpu.getiRegister("hi")) << "   "
-    << " hi = " << toHex(cpu.getiRegister("lo"))
+    << " hi = " << toHex(cpu.getiRegister("hi")) << "   "
+    << " lo = " << toHex(cpu.getiRegister("lo"))
     << endl 
     << endl;
 
@@ -217,7 +217,7 @@ void Debugger::debugREPL() {
       } 
       else if (tok == "run")  { 
         step = false; 
-        
+
         // "clear" screen
         cerr << string(100, '\n');
         return; 
@@ -247,7 +247,7 @@ void Debugger::debugREPL() {
           >> hex >> new_val;
 
         bus.store(memaddr, new_val);
-      } 
+      }
       else if (tok == "+watch") {
         uint32_t memaddr;
         in_ss >> hex >> memaddr;
@@ -271,7 +271,7 @@ void Debugger::debugREPL() {
           << "  poke <addr> <val> - edit contents of <addr>"      << endl
           << "  +watch <addr>     - keep an eye on <addr>"        << endl
           << "  -watch <addr>     - don't keep an eye on <addr>"  << endl
-          << "  print             - dislpay debug data"           << endl;
+          << "  print             - display debug data"           << endl;
       }
 
       else {
