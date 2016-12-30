@@ -5,6 +5,8 @@
 #include <cstring>
 #include <cstdint>
 
+#include <unistd.h>
+
 #include "mem.h"
 #include "bus.h"
 #include "cpu.h"
@@ -29,14 +31,23 @@ int readNum(std::istream & in) {
 
 int main(int argc, char const *argv[]) {
   // Check arguments
-  if (argc < 2 || argc > 3) {
+  if (argc < 2 || argc > 4) {
     std::cerr 
-      << "Usage: ./mips241 <filename> [-twoints]" 
+      << "Usage: ./mips241 <filename> [-twoints] [--debug]" 
       << std::endl;
     return -1;
   }
 
-  bool use_twoints = argc == 3; // make better later lol
+  std::string filename;
+  bool use_twoints = false;
+  bool debugmode = false;
+  for (int i = 1; i < argc; i++) {
+    std::string arg = string(argv[i]);
+
+    if (i == 1) filename = arg;
+    if (arg == "-twoints") use_twoints = true;
+    if (arg == "--debug" ) debugmode = true;
+  }
 
   //--------------------------------- SETUP ---------------------------------//
 
@@ -46,11 +57,11 @@ int main(int argc, char const *argv[]) {
   MIPS::CPU cpu (bus);
 
   // Load program into RAM
-  std::ifstream bin (argv[1], std::ifstream::binary);
+  std::ifstream bin (filename, std::ifstream::binary);
 
   // Check for IO error
   if (!bin.is_open()) {
-    std::cerr << "Cannot open file." << std::endl;
+    std::cerr << "Cannot open file `" << filename << "`" << std::endl;
     return -1;
   }
 
@@ -103,6 +114,12 @@ int main(int argc, char const *argv[]) {
     }
   }
 
+  // If this program is running interactively, clear cin before starting cpu
+  //  emulation
+  bool isTTY = isatty(fileno(stdin));
+  if (isTTY) { std::string dummy; getline(std::cin, dummy); }
+
+
   std::cerr << std::endl;
 
   // Start CPU execution
@@ -111,14 +128,14 @@ int main(int argc, char const *argv[]) {
   try {
     std::cerr << "Starting CPU..." << std::endl;
     do {
-      debugger.debugREPL();
+      if (debugmode) 
+        debugger.debugREPL();
 
       // Execute cpu cycle
       cpu.do_cycle();
     } while (cpu.stillExecuting());
 
     std::cerr
-      << std::endl
       << "Execution completed successfully!"
       << std::endl;
     debugger.printCPUState();
