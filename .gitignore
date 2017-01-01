@@ -2,6 +2,6 @@
 
 /_disasm/disasm
 
-/src/mips241
+/mips241
 /src/.d/
 /src/.o/
