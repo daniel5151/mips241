@@ -1,7 +1,5 @@
 #include "mem.h"
 
-#include "disasm.h"
-
 #include <cstdint>
 
 #include <sstream>
@@ -9,11 +7,7 @@
         ( std::ostringstream() << std::hex << x ) ).str()
 
 MIPS::RAM::RAM () {}
-MIPS::RAM::~RAM () {
-  for (auto it = mem.begin(); it != mem.end(); ++it) {
-    delete [] it->second;
-  }
-}
+MIPS::RAM::~RAM () { for (auto entry : mem) delete [] entry.second; }
 
 void MIPS::RAM::store(uint32_t memaddr, uint32_t word) {
   if (memaddr % 4 != 0) {

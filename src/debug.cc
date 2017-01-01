@@ -165,12 +165,12 @@ void Debugger::debugPrint() {
       << endl
       << "     ADDR    |   HEXVAL   " << endl
       << "  -----------|------------" << endl;
-    for (auto it = watch.begin(); it != watch.end(); it++) {
+    for (auto addr : watch) {
       cerr 
         << "  "
-        << toHex(*it) 
+        << toHex(addr) 
         << " | "
-        << toHex(ram.load(*it))
+        << toHex(ram.load(addr))
         << endl
         << endl;
 
