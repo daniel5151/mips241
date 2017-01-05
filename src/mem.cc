@@ -1,17 +1,15 @@
 #include "mem.h"
 
 #include <cstdint>
-
 #include <sstream>
-#define SSTR( x ) static_cast< std::ostringstream & >( \
-        ( std::ostringstream() << std::hex << x ) ).str()
 
 MIPS::RAM::RAM () {}
 MIPS::RAM::~RAM () { for (auto entry : mem) delete [] entry.second; }
 
 void MIPS::RAM::store(uint32_t memaddr, uint32_t word) {
   if (memaddr % 4 != 0) {
-    throw "Unaligned Access - Cannot Store to 0x" + SSTR(memaddr);
+    std::stringstream err; err << memaddr;
+    throw "Unaligned Access - Cannot Store to 0x" + err.str();
     return;
   }
 
@@ -27,7 +25,8 @@ void MIPS::RAM::store(uint32_t memaddr, uint32_t word) {
 
 uint32_t MIPS::RAM::load(uint32_t memaddr) {
   if (memaddr % 4 != 0) {
-    throw "Unaligned Access - Cannot Load from 0x" + SSTR(memaddr);
+    std::stringstream err; err << memaddr;
+    throw "Unaligned Access - Cannot Load from 0x" + err.str();
     return -1;
   }
 

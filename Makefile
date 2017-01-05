@@ -1,17 +1,8 @@
-mips241:
+mips241.js:
 	cd src; make
-	mv src/mips241 mips241
+	mv src/mips241.js mips241.js
 
 
 .PHONY: clean
 clean:
-	rm -rf src/.o/ mips241
-
-.PHONY: cleandep
-cleandep:
-	rm -rf src/.d/
-
-.PHONY: cleaner
-cleaner:
-	rm -rf src/.d/
-	rm -rf src/.o/ mips241
+	rm -rf mips241.js
