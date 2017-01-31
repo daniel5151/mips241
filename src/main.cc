@@ -7,7 +7,7 @@
 
 #include <unistd.h>
 
-#include "mem.h"
+#include "ram.h"
 #include "bus.h"
 #include "cpu.h"
 

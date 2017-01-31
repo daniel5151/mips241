@@ -1,8 +1,11 @@
+/* Where the real magic happens */
+
 #include "bus.h"
 #include "cpu.h"
-#include "disasm.h"
 #include "debug.h"
-#include "mem.h"
+#include "ram.h"
+
+#include "../_disasm/disasm.h"
 
 #include <emscripten/bind.h>
 
@@ -17,6 +20,7 @@ EMSCRIPTEN_BINDINGS(mips241) {
     .constructor<MIPS::RAM&>()
     .function("load", &MIPS::BUS::load)
     .function("store", &MIPS::BUS::store)
+    .function("getOutput", &MIPS::BUS::getOutput)
     ;
 
   emscripten::class_<MIPS::CPU>("MIPS::CPU")
@@ -35,6 +39,8 @@ EMSCRIPTEN_BINDINGS(mips241) {
     .constructor<MIPS::CPU&, MIPS::RAM&, MIPS::BUS&>()
     .function("printCPUState", &MIPS::Debugger::printCPUState)
     .function("printRAMFrom", &MIPS::Debugger::printRAMFrom)
+    .function("addhiglight", &MIPS::Debugger::addhiglight)
+    .function("removehiglight", &MIPS::Debugger::removehiglight)
     ;
 
   emscripten::function("MIPS$$disasm", MIPS::disasm);

@@ -1,7 +1,8 @@
+.DS_Store
 /localtesting/
 
 /_disasm/disasm
 
-/mips241
+mips241.js
 /src/.d/
 /src/.o/

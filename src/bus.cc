@@ -1,10 +1,10 @@
 #include "bus.h"
-#include "mem.h"
+#include "ram.h"
 
 #include <cstdint>
 #include <iostream>
 
-MIPS::BUS::BUS(MIPS::RAM & mem) : mem(mem) {}
+MIPS::BUS::BUS(MIPS::RAM & mem) : mem(mem), outputBuffer("") {}
 MIPS::BUS::~BUS() {}
 
 uint32_t MIPS::BUS::load(uint32_t addr) {
@@ -28,8 +28,14 @@ uint32_t MIPS::BUS::load(uint32_t addr) {
 void MIPS::BUS::store(uint32_t addr, uint32_t data) {
   // Check if we are using any memory mapped I/O
   if (addr == 0xFFFF000C) {
-    std::cout << ((char)data);
+    outputBuffer = std::string(1, (char)data);
   } else {
     mem.store(addr, data);
   }
+}
+
+std::string MIPS::BUS::getOutput() {
+  std::string out = outputBuffer;
+  outputBuffer = "";
+  return out;
 }

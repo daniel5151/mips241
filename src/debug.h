@@ -2,7 +2,7 @@
 #define DEBUG_H_
 
 #include "bus.h"
-#include "mem.h"
+#include "ram.h"
 #include "cpu.h"
 
 #include <map>
@@ -40,6 +40,9 @@ namespace MIPS {
     void printCPUState();
     void printRAMFrom(uint32_t addr, int n);
     void debugREPL();
+
+    void addhiglight(uint32_t addr); 
+    void removehiglight(uint32_t addr); 
   };
 }
 

@@ -1,3 +1,14 @@
+/**
+ *
+ * NOTE: disasm.cc is a super simple function that given a single word, returns
+ * the associated asm instruction.
+ * This main file is my attempt to also do some more interesting disassembly,
+ * such as handling MERL files, and (hopefully) generating labels.
+ *
+ */
+
+
+
 #include <iostream>
 #include <iomanip>
 #include <sstream>

@@ -8,20 +8,49 @@ const cpu = new cpp.MIPS$$CPU(bus);
 
 const debug = new cpp.MIPS$$Debugger(cpu, ram, bus);
 
-const file = fs.readFileSync(process.argv[2]);
+const disasm = cpp.MIPS$$disasm;
+
+const file = require('fs').readFileSync(process.argv[2]);
 
 for (var i = 0; i < file.length; i+=4) {
   ram.store(i, file.readUInt32BE(i));
 }
 
-cpu.setRegister(1, 3);
+cpu.setRegister(1, 128);
 cpu.setRegister(2, 5);
 
-// debug.printRAMFrom(0x0, 30);
+debug.printRAMFrom(0, 70)
 
-while(cpu.stillExecuting())
-  cpu.do_cycle();
+var readline = require('readline');
+var rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+  terminal: false
+});
 
-debug.printCPUState();
+rl.on('line', function(line){
+  if (cpu.stillExecuting() === false) process.exit(0);
 
-ram.delete(); // nontrivial destructor
+  for (var i = 0; i < 5; i++) {
+    cpu.do_cycle();
+  }
+
+  process.stdout.write(bus.getOutput())
+
+
+  // for (var i = 0; i < 100; i++) process.stdout.write('\n')
+
+  // debug.addhiglight(cpu.getRegister(30))
+  // debug.printRAMFrom(cpu.getRegister(30) - 10 * 4, 12);
+  // debug.removehiglight(cpu.getRegister(30))
+
+  // debug.addhiglight(cpu.getiRegister("PC"))
+  // debug.printRAMFrom(Math.max(cpu.getiRegister("PC") - 4 * 6, 0), 12);
+  // debug.removehiglight(cpu.getiRegister("PC"))
+  // debug.printCPUState();
+})
+
+  // process.stdout.write(bus.getOutput())
+
+
+// ram.delete(); // nontrivial destructor

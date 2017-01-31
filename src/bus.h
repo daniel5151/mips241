@@ -4,7 +4,9 @@
 #include <cstdint>
 #include <deque>
 
-#include "mem.h"
+#include <string>
+
+#include "ram.h"
 
 namespace MIPS {
   class BUS {
@@ -12,12 +14,15 @@ namespace MIPS {
     RAM & mem;
 
     std::deque<char> inputBuffer;
+    std::string outputBuffer;
   public:
     BUS(RAM & mem);
     ~BUS();
 
     uint32_t load (uint32_t addr);
     void     store(uint32_t addr, uint32_t data);
+
+    std::string getOutput();
   };
 }
 

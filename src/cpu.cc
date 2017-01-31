@@ -1,8 +1,6 @@
 #include "cpu.h"
 #include "bus.h"
 
-#include "disasm.h"
-
 #include <cstdint>
 
 MIPS::CPU::CPU(MIPS::BUS & bus) : MEM(bus) 
