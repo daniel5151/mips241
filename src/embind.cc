@@ -6,6 +6,7 @@
 #include "ram.h"
 
 #include "../_disasm/disasm.h"
+#include "../_asm/asm.h"
 
 #include <emscripten/bind.h>
 
@@ -44,4 +45,6 @@ EMSCRIPTEN_BINDINGS(mips241) {
     ;
 
   emscripten::function("MIPS$$disasm", MIPS::disasm);
+
+  emscripten::function("MIPS$$asm", assembleWrapper);
 }
