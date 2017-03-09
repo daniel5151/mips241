@@ -7,12 +7,10 @@
     .word   4
     sub     $30, $30, $31
 
-    ; Call recSum(13)
+    ; Call recSum($1)
 
     lis     $4
     .word   recSum
-    lis     $1
-    .word   13
     jalr    $4
 
     ; Restore $31 from the stack

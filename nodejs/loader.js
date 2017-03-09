@@ -19,11 +19,17 @@ function assemble(str) {
   // Ah well ¯\_(ツ)_/¯
   delete require.cache["/Users/xtdbp/Github/mips241/nodejs/mips241.js"];
   const cpp = require("./mips241.js")
-  return cpp.MIPS$$asm(str)
-    .split(" ")
-    .filter((x,i,a) => i !== a.length - 1)
-    .map(x => { console.log(x); return x; })
-    .map(x => parseInt(x, 10))
+
+  try {
+    return cpp.MIPS$$asm(str)
+      .split(" ")
+      .filter((x,i,a) => i !== a.length - 1)
+      .map(x => { console.log(x); return x; })
+      .map(x => parseInt(x, 10))
+  } catch (err) {
+    console.log(err)
+    process.exit()
+  }
 }
 
 /* Load in a `.asm` file to compile */
