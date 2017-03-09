@@ -37,7 +37,6 @@ module.exports = {
     "jest": false,
     "localStorage": true,
     "Map": true,
-    "Module": true, // holla holla get emscripten
     "module": false,
     "navigator": false,
     "process": false,
