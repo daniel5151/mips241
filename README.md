@@ -1,15 +1,31 @@
 # mips241
 ### A MIPS system emulator for CS 241 @ uWaterloo
 
+**TL;DR: Faster than `java mips.array` / `java mips.twoints`, and also a
+_step by step debugger_**
+
 To Build: `make` inside the `src` directory<br>
 To Run: `./mips241 <filename> [-twoints] [--debug]`
 
-(running without `-twoints` results in `java mips.array` functionality)
+By defult, behavior matches `java mips.array` functionality<br>
+Passing in `-twoints` results in `java mips.twoints` functionality
+
+### Are you on [not a linux distro here]?
+
+You might get a bunch of compiler errors!
+
+I developed this on Ubuntu 16.04 on my chromebook, so your mileage may vary.
+
+If you're on **macOS**, you might need to install `g++` manually.
+A quick `brew install gcc` followed by changing the `Makefile` to point to the
+proper `g++` aughta do the trick.
+
+If you're on **Windows**, ¯\\\_(ツ)_/¯
 
 ### Why use this thing?
 
-Aside from running faster than `java mips.twoints` / `java mips.array` (looking 
-at you *java*), `mips241` also comes with a plethora of useful ***debugging 
+Aside from running faster than `java mips.twoints` / `java mips.array` (looking
+at you *java*), `mips241` also comes with a plethora of useful ***debugging
 features!***
 
 Starting the emulator with the `--debug` flag throws you into a debug interface
@@ -17,7 +33,7 @@ that looks a little something like this:
 
 ```
   ----------====== Stack RAM ======---------
-     ADDR    |   HEXVAL   :     MIPS ASM    
+     ADDR    |   HEXVAL   :     MIPS ASM
   -----------|------------------------------
   0x00fffff0 | 0x00000000 : .word 0x00000000
   0x00fffff4 | 0x00000000 : .word 0x00000000
@@ -33,7 +49,7 @@ that looks a little something like this:
   0x0100001c | 0x00000000 : .word 0x00000000
 
   ---------====== Program RAM ======--------
-     ADDR    |   HEXVAL   :     MIPS ASM    
+     ADDR    |   HEXVAL   :     MIPS ASM
   -----------|------------------------------
   0x00000000 | 0x00002014 : lis   $4
   0x00000004 | 0x00000004 : .word 0x00000004
@@ -71,7 +87,7 @@ $29 = 0x00000000   $30 = 0x01000000   $31 = 0x8123456c
  RY = 0x00000004
 Stage: 0
 Cycle no. 5
-step> 
+step>
 
 ```
 
@@ -96,25 +112,18 @@ files, and it'll spit out a `.asm` file.
 
 # Trivia
 
-`mips241` uses the same processor datapath as taught in ECE 222. 
+`mips241` uses the same processor datapath as taught in ECE 222.
 
-Why? 
+Why?
 
 Well, I wanted to make it so that at some point in the future I could have taken
 a crack at pipelining this emulated processor. I never did, but if any of you
 Software Engineers out there want to take a shot at doing that, go ahead!
 
-# Disclaimers and Troubleshooting
+# Disclaimer
 
-I provide no guarantees that this is perfect and/or bug-free, but hey, at least 
+I provide no guarantees that this is perfect and/or bug-free, but hey, at least
 it's free ¯\\\_(ツ)\_/¯
-
-Oh, also, i've only tested this on Linux (#chromebooklife), but OSX should work 
-fine.
-Windows on the other hand...
-
-Also, if the Makefile doesn't work, you can manually build the thing with <br>
-`g++ -Wall -std=c++11 -o mips241 bus.cc cpu.cc main.cc debug.cc disasm.cc mem.cc`
 
 ####\- Daniel Prilik 2016 (http://prilik.ca)
 

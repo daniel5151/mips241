@@ -14,7 +14,7 @@ uint32_t MIPS::BUS::load(uint32_t addr) {
       std::string input;
       getline(std::cin, input);
       input += "\n";
-      for (uint i = 0; i < input.length(); i++)
+      for (uint32_t i = 0; i < input.length(); i++)
         inputBuffer.push_back(input[i]);
     }
     char in = inputBuffer.front();

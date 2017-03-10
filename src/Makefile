@@ -19,7 +19,7 @@ $(OBJDIR)%.o : %.cc
 	$(CXX) $(CXXFLAGS) $< -c -o $@
 
 # include all dep files in the makefile
--include $(dep)   
+-include $(dep)
 # rule to generate a dep file by using the C preprocessor
 # (see man cpp for details on the -MM and -MT options)
 $(DEPDIR)%.d: %.cc
