@@ -11,11 +11,40 @@ import 'brace/ext/searchbox';
 import debounce from '~/libs/debounce';
 
 // let's NOT touch spaghetti code
-import { getEmu, assemble } from '~/libs/emuwrapper';
+import { getEmu, assemble } from '~/libs/mips241web';
+
+import printCode from '~/libs/print.json';
+const PRINTADDR = 0xFFFF8000;
 
 import sample from '~/asm_samples/recur_proc.asm';
 
 import './App.css';
+
+// eslint-disable-next-line
+function chunk(a,b){for(var c=[],d=0,e=a.length;d<e;)c.push(a.slice(d,d+=b));return c}
+// eslint-disable-next-line
+function leftPad(a,b,c){if(a+="",b-=a.length,b<=0)return a;if(c||0===c||(c=" "),c+=""," "===c&&b<10)return cache[b]+a;for(var d="";;){if(1&b&&(d+=c),b>>=1,!b)break;c+=c}return d+a}var cache=[""," ","  ","   ","    ","     ","      ","       ","        ","         "];
+
+function callFunc(addr) {
+  return `
+    ; store return addr on stack
+    sw      $31, -4($30)
+    lis     $31
+    .word   4
+    sub     $30, $30, $31
+
+    ; call print
+    lis     $31
+    .word   ${addr}
+    jalr    $31
+
+    ; restore return addr
+    lis     $31
+    .word   4
+    add     $30, $30, $31
+    lw      $31, -4($30)
+  `;
+}
 
 class App extends Component {
   state = {
@@ -30,8 +59,36 @@ class App extends Component {
   }
 
   assemble = async () => {
+    // preprocess
+
+    const code = this.state.code.replace(/print! (\$\d+)/g, (match, p1, offset) => {
+      const macro = [
+        `add     $1, $0, ${p1}`,
+        callFunc(PRINTADDR),
+      ];
+
+      if (p1 !== "$1") {
+        macro.unshift(`
+          ; store $1 register on stack
+          sw      $1, -4($30)
+          lis     $1
+          .word   4
+          sub     $30, $30, $1
+        `);
+        macro.push(`
+          ; restore $1 register
+          lis     $1
+          .word   4
+          add     $30, $30, $1
+          lw      $1, -4($30)
+        `);
+      }
+
+      return macro.join("\n");
+    });
+
     try {
-      const words = await assemble(this.state.code);
+      const words = await assemble(code);
       this.setState({
         assembled: words,
         annotations: []
@@ -52,6 +109,10 @@ class App extends Component {
     const didAssemble = await this.assemble();
     if (!didAssemble) return;
 
+    console.log(
+      chunk(this.state.assembled.map(x => chunk(leftPad(x.toString(16), 8, "0"), 4).join(" ")), 4).map(x => x.join(" ")).join("\n")
+    );
+
     const { ram, bus, cpu, debug } = await getEmu({
       // onSTDOUT: () => {},
       onSTDERR: (s) => this.setState({ log: this.state.log.concat(s) })
@@ -59,6 +120,11 @@ class App extends Component {
 
     this.state.assembled.forEach((x, i) => {
       ram.store(i * 4, x);
+    });
+
+    // inject print code
+    printCode.forEach((x, i) => {
+      ram.store(PRINTADDR + i * 4, x);
     });
 
     cpu.setRegister(1, this.state.$1 >>> 0);
@@ -73,6 +139,13 @@ class App extends Component {
       }
 
       outStr += bus.getOutput();
+
+      // await new Promise(r => setTimeout(r, 1000));
+
+      // debug.addhiglight(cpu.getiRegister("PC"));
+      // debug.printRAMFrom(Math.max(cpu.getiRegister("PC") - 4 * 6, 0), 12);
+      // debug.removehiglight(cpu.getiRegister("PC"));
+      // debug.printCPUState();
     }
 
     this.setState({ log: this.state.log.concat(outStr), annotations: [] });
@@ -89,9 +162,9 @@ class App extends Component {
     //   Program RAM
     //   -----------
     // `);
-    // debug.addhiglight(cpu.getiRegister("PC"));
-    // debug.printRAMFrom(Math.max(cpu.getiRegister("PC") - 4 * 6, 0), 12);
-    // debug.removehiglight(cpu.getiRegister("PC"));
+    debug.addhiglight(cpu.getiRegister("PC"));
+    debug.printRAMFrom(Math.max(cpu.getiRegister("PC") - 4 * 6, 0), 12);
+    debug.removehiglight(cpu.getiRegister("PC"));
     debug.printCPUState();
 
     ram.delete(); // nontrivial destructor

@@ -7,32 +7,50 @@ var TextHighlightRules = acequire("./text_highlight_rules").TextHighlightRules;
 
 var MIPSAssemblerHighlightRules = function() {
 
-    this.$rules = { start:
-       [ { token: 'support.function.pseudo.mips',
-           regex: '\\b(?:add|sub|mult|multu|div|divu|mfhi|mflo|lis|lw|sw|slt|sltu|beq|bne|jr|jalr)\\b',
-           comment: 'ok actually this are instructions, but one also could call them funtions…' },
-         { token: 'storage.modifier.mips',
-           regex: '\\.\\b(import|export|word)\\b' },
-         { token:
-            [ 'entity.name.function.label.mips',
-              'meta.function.label.mips' ],
-           regex: '\\b([A-Za-z][A-Za-z0-9]*)(:)' },
-         { token: 'variable.parameter.mips',
-           regex: '\\$((3[01])|([12]?[0-9])|[0-9])' },
-         { token:
-            [ 'punctuation.definition.variable.mips',
-              'variable.other.register.usable.floating-point.mips',
-              'variable.other.register.usable.floating-point.mips' ],
-           regex: '(\\$)(f)([0-9]|1[0-9]|2[0-9]|3[0-1])\\b' },
-         { token: 'constant.numeric.integer.mips',
-           regex: '\\b(?:\\d+|0(?:x|X)[a-fA-F0-9]+)\\b' },
-         { token: 'punctuation.definition.comment.mips',
-           regex: ';',
-           push:
-            [ { token: 'comment.line.number-sign.mips',
-                regex: '$',
-                next: 'pop' },
-              { defaultToken: 'comment.line.number-sign.mips' } ] } ] }
+    this.$rules = {
+      start: [
+          {
+            token: 'support.function.pseudo.mips',
+            regex: '\\b(?:add|sub|mult|multu|div|divu|mfhi|mflo|lis|lw|sw|slt|sltu|beq|bne|jr|jalr)\\b',
+            comment: 'ok actually this are instructions, but one also could call them funtions…'
+          }, {
+            token: 'keyword.control',
+            regex: '\\b(print!)'
+          }, {
+            token: 'storage.modifier.mips',
+            regex: '\\.\\b(import|export|word)\\b'
+          }, {
+            token: [
+                'entity.name.function.label.mips',
+                'meta.function.label.mips'
+            ],
+            regex: '\\b([A-Za-z][A-Za-z0-9]*)(:)'
+          }, {
+            token: 'variable.parameter.mips',
+            regex: '\\$((3[01])|([12]?[0-9])|[0-9])'
+          }, {
+            token: [
+                'variable.other.register.usable.floating-point.mips',
+                'variable.other.register.usable.floating-point.mips'
+            ],
+            regex: '(\\$)([0-9]|1[0-9]|2[0-9]|3[0-1])\\b'
+          }, {
+            token: 'constant.numeric.integer.mips',
+            regex: '\\b(?:\\d+|0(?:x|X)[a-fA-F0-9]+)\\b'
+          }, {
+            token: 'punctuation.definition.comment.mips',
+            regex: ';',
+            push: [
+                {
+                    token: 'comment.line.number-sign.mips',
+                    regex: '$',
+                    next: 'pop'
+                },
+                { defaultToken: 'comment.line.number-sign.mips' }
+            ]
+          }
+      ]
+    }
 
     this.normalizeRules();
 };
