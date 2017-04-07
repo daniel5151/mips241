@@ -44,8 +44,8 @@ string toHex(T const& x) {
 int main(int argc, char const *argv[]) {
   // Check arguments
   if (argc != 2) {
-    cerr 
-      << "Usage: ./disasm <filename>" 
+    cerr
+      << "Usage: ./disasm <filename>"
       << endl;
     return -1;
   }
@@ -70,25 +70,25 @@ int main(int argc, char const *argv[]) {
   bool isMERL = false;
   int fileLength;
   int codeLength;
-  
+
   for ever {
     stringstream outLn;
 
-    try { word = readMIPSbyte(bin); } 
+    try { word = readMIPSbyte(bin); }
     catch (const string & msg) {
       if (msg == "EOF") break;
     }
 
     if (outLines.size() == 0 && word == 0x10000002) {
       isMERL = true;
-      outLn 
-        << "    .word 0x10000002" 
+      outLn
+        << "    .word 0x10000002"
         << " ; MERL cookie";
       outLines.push_back(outLn.str());
     }
     else if (outLines.size() == 1 && isMERL) {
       fileLength = (int)word;
-      outLn 
+      outLn
         << "    .word " << toHex(word)
         << " ; File Length (in bytes) is "
         << fileLength;
@@ -96,7 +96,7 @@ int main(int argc, char const *argv[]) {
     }
     else if (outLines.size() == 2 && isMERL) {
       codeLength = (int)word;
-      outLn 
+      outLn
         << "    .word " << toHex(word)
         << " ; Code Length (in bytes) is "
         << codeLength;
@@ -106,10 +106,10 @@ int main(int argc, char const *argv[]) {
       if (word == 0x01) {
         // Relocation Table
         uint32_t addr2relocate;
-        try { addr2relocate = readMIPSbyte(bin); } 
+        try { addr2relocate = readMIPSbyte(bin); }
         catch (const string & msg) {
           if (msg == "EOF") {
-            cerr 
+            cerr
               << "ERROR: "
               << "Abrupt EOF when trying to read a REL"
               << endl;
@@ -132,7 +132,7 @@ int main(int argc, char const *argv[]) {
         uint32_t addr2export;
         int   name_len;
         char* name;
-        try { 
+        try {
           addr2export = readMIPSbyte(bin);
           name_len    = readMIPSbyte(bin);
 
@@ -141,10 +141,10 @@ int main(int argc, char const *argv[]) {
             name[i] = (char)readMIPSbyte(bin);
 
           name[name_len] = '\0';
-        } 
+        }
         catch (const string & msg) {
           if (msg == "EOF") {
-            cerr 
+            cerr
               << "ERROR: "
               << "Abrupt EOF when trying to read a ESD"
               << endl;
@@ -152,7 +152,7 @@ int main(int argc, char const *argv[]) {
           }
         }
 
-        outLn 
+        outLn
           << "    .word 0x05       ; ESD - "
           << name;
         outLines.push_back(outLn.str());
@@ -167,8 +167,8 @@ int main(int argc, char const *argv[]) {
 
         for (int i = 0; i < name_len; i++) {
           outLn = stringstream(); // clear stringstream
-          outLn 
-            << "    .word " << setw(3) << left << (int)name[i] 
+          outLn
+            << "    .word " << setw(3) << left << (int)name[i]
             << " ; " << name[i];
           outLines.push_back(outLn.str());
         }
@@ -184,7 +184,7 @@ int main(int argc, char const *argv[]) {
         uint32_t addr2import;
         int   name_len;
         char* name;
-        try { 
+        try {
           addr2import = readMIPSbyte(bin);
           name_len    = readMIPSbyte(bin);
 
@@ -193,10 +193,10 @@ int main(int argc, char const *argv[]) {
             name[i] = (char)readMIPSbyte(bin);
 
           name[name_len] = '\0';
-        } 
+        }
         catch (const string & msg) {
           if (msg == "EOF") {
-            cerr 
+            cerr
               << "ERROR: "
               << "Abrupt EOF when trying to read a ESR"
               << endl;
@@ -204,7 +204,7 @@ int main(int argc, char const *argv[]) {
           }
         }
 
-        outLn 
+        outLn
           << "    .word 0x11       ; ESR - "
           << name;
         outLines.push_back(outLn.str());
@@ -219,12 +219,12 @@ int main(int argc, char const *argv[]) {
 
         for (int i = 0; i < name_len; i++) {
           outLn = stringstream(); // clear stringstream
-          outLn 
-            << "    .word " << setw(3) << left << (int)name[i] 
+          outLn
+            << "    .word " << setw(3) << left << (int)name[i]
             << " ; " << name[i];
           outLines.push_back(outLn.str());
         }
-        
+
 
         outLines[(int)(addr2import / 4)] += " ; ESR - " + string(name);
 
@@ -236,7 +236,7 @@ int main(int argc, char const *argv[]) {
       string         disasmLn      (MIPS::disasm(word));
       stringstream   disasmLn_ss   (disasmLn);
       vector<string> disasmLn_toks ;
-      
+
       string buf;
       while (disasmLn_ss >> buf)
         disasmLn_toks.push_back(buf);
@@ -245,7 +245,7 @@ int main(int argc, char const *argv[]) {
         outLines.push_back("    " + disasmLn);
 
         uint32_t lisVal;
-        try { lisVal = readMIPSbyte(bin); } 
+        try { lisVal = readMIPSbyte(bin); }
         catch (const string & msg) {
           if (msg == "EOF") {
             cerr
@@ -257,21 +257,21 @@ int main(int argc, char const *argv[]) {
         }
         outLn << "    .word " << toHex(lisVal);
         outLines.push_back(outLn.str());
-      } 
+      }
       // else if (disasmLn_toks[0] == "bne" || disasmLn_toks[0] == "beq") {
       //   stringstream offset_ss (disasmLn_toks.back());
       //   int offset;
       //   offset_ss >> offset;
 
       //   branches[outLines.size()] = branches.size();
-        
+
       //   outLn << "    " << disasmLn_toks[0] << "   ";
       //   for (auto it = disasmLn_toks.begin() + 1; it != disasmLn_toks.end() - 1; it++)
       //     outLn << *it << " ";
       //   outLn << "loop"; // Gets filled in later
-        
+
       //   outLines.push_back(outLn.str());
-      // } 
+      // }
       else if (disasmLn == "jr    $31") {
         outLines.push_back("    " + disasmLn + "\n\n\n\n");
       }
@@ -293,7 +293,7 @@ int main(int argc, char const *argv[]) {
   //     branch_targets[target] = branch_targets.size();
 
   //   // Add loop id to beq / bne instruction
-  //   stringstream id_stoi; 
+  //   stringstream id_stoi;
   //   id_stoi << branch_targets[target];
   //   outLines[it->first] += id_stoi.str();
   // }

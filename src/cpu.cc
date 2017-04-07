@@ -1,11 +1,12 @@
 #include "cpu.h"
 #include "bus.h"
+#include "error.h"
 
 #include "disasm.h"
 
 #include <cstdint>
 
-MIPS::CPU::CPU(MIPS::BUS & bus) : MEM(bus) 
+MIPS::CPU::CPU(MIPS::BUS & bus) : MEM(bus)
 {
   // Internal flags and tracking vars
   isExecuting = true;
@@ -29,6 +30,19 @@ MIPS::CPU::~CPU() {}
 bool MIPS::CPU::stillExecuting() { return isExecuting; }
 
 void MIPS::CPU::setRegister(int reg, uint32_t val) { R[reg] = val; }
+void MIPS::CPU::setiRegister(std::string reg, uint32_t val) {
+  #define IREG(name_str, var) if (reg == name_str) var = val;
+    IREG("RA", RA);
+    IREG("RB", RB);
+    IREG("RZ", RZ);
+    IREG("RM", RM);
+    IREG("RY", RY);
+    IREG("IR", IR);
+    IREG("PC", PC);
+    IREG("hi", hi);
+    IREG("lo", lo);
+  #undef IREG
+}
 
 int      MIPS::CPU::getCycle()           { return cycles; }
 int      MIPS::CPU::getStage()           { return stage;  }
@@ -54,7 +68,7 @@ uint32_t MIPS::CPU::getiRegister(std::string reg) {
 
 uint32_t MIPS::CPU::decodeOPcode(uint32_t IR) {
   bool hasImmediateValue = (IR >> 26) != 0;
-  return (hasImmediateValue) 
+  return (hasImmediateValue)
     ? IR & 0xFC000000   // Mask off all register identifiers + immediate bits
     : IR & 0x0000003F;  // Mask off all register identifiers
 }
@@ -111,73 +125,73 @@ void MIPS::CPU::exec() {
 
   switch (opcode) {
     /* Arithmetic */
-    case OP_ADD:   
+    case OP_ADD:
       RZ = static_cast<uint32_t>(RA_s + RB_s);
-      break;      
-    case OP_SUB:   
+      break;
+    case OP_SUB:
       RZ = static_cast<uint32_t>(RA_s - RB_s);
-      break;  
-    case OP_SLT:   
+      break;
+    case OP_SLT:
       RZ = static_cast<uint32_t>(RA_s < RB_s);
-      break;  
-    case OP_SLTU:   
+      break;
+    case OP_SLTU:
       RZ = RA < RB;
-      break; 
-    case OP_MFHI:   
+      break;
+    case OP_MFHI:
       RZ = hi;
-      break; 
-    case OP_MFLO:   
+      break;
+    case OP_MFLO:
       RZ = lo;
-      break; 
-    case OP_MULT:  
+      break;
+    case OP_MULT:
       lo = (static_cast<int64_t>(RA_s) * static_cast<int64_t>(RB_s));
       hi = (static_cast<int64_t>(RA_s) * static_cast<int64_t>(RB_s)) >> 32;
-      break; 
-    case OP_MULTU:   
-      lo = (static_cast<uint64_t>(RA) * static_cast<uint64_t>(RB));            
+      break;
+    case OP_MULTU:
+      lo = (static_cast<uint64_t>(RA) * static_cast<uint64_t>(RB));
       hi = (static_cast<uint64_t>(RA) * static_cast<uint64_t>(RB)) >> 32;
       break;
-    case OP_DIV:   
-      lo = RA_s / RB_s;           
+    case OP_DIV:
+      lo = RA_s / RB_s;
       hi = RA_s % RB_s;
-      break;  
-    case OP_DIVU:   
-      lo = RA / RB;             
+      break;
+    case OP_DIVU:
+      lo = RA / RB;
       hi = RA % RB;
       break;
 
     /* Jumps and Branches */
-    case OP_JR:  
+    case OP_JR:
       PC = RA;
       break;
-    case OP_JALR:  
+    case OP_JALR:
       RZ = PC;
       PC = RA;
       break;
-    case OP_BEQ:  
+    case OP_BEQ:
       PC += (RA == RB) ? imm * 4 : 0;
       break;
-    case OP_BNE:  
+    case OP_BNE:
       PC += (RA != RB) ? imm * 4 : 0;
       break;
 
     /* Loads and Stores */
-    case OP_SW:   
+    case OP_SW:
       RZ = RA + imm;
       RM = RB;
       break;
-    case OP_LW:   
+    case OP_LW:
       RZ = RA + imm;
       break;
 
     /* Load Immediate Store */
-    case OP_LIS:  
-      RZ = PC; 
+    case OP_LIS:
+      RZ = PC;
       PC += 4;
       break;
 
-    default: 
-      throw std::string("Invalid opcode"); 
+    default:
+      error("Invalid opcode");
       break;
   }
 
@@ -187,11 +201,11 @@ void MIPS::CPU::exec() {
 void MIPS::CPU::memory() {
   switch (decodeOPcode(IR)) {
     case OP_LIS:
-    case OP_LW: 
-      RY = MEM.load(RZ); 
+    case OP_LW:
+      RY = MEM.load(RZ);
       break;
     case OP_SW:
-      MEM.store(RZ, RM); 
+      MEM.store(RZ, RM);
       break;
     default:
       RY = RZ;
@@ -216,7 +230,7 @@ void MIPS::CPU::wback() {
       case OP_SW:
         // No writeback
         break;
-      case OP_ADD:    
+      case OP_ADD:
       case OP_SUB:
       case OP_SLT:
       case OP_SLTU:

@@ -1,7 +1,6 @@
 mips241:
-	cd src; make
+	cd src && $(MAKE)
 	mv src/mips241 mips241
-
 
 .PHONY: clean
 clean:

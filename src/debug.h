@@ -2,7 +2,7 @@
 #define DEBUG_H_
 
 #include "bus.h"
-#include "mem.h"
+#include "ram.h"
 #include "cpu.h"
 
 #include <map>

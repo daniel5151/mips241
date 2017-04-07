@@ -1,5 +1,5 @@
-#ifndef MEM_H_
-#define MEM_H_
+#ifndef RAM_H_
+#define RAM_H_
 
 #include <cstdint>
 #include <map>

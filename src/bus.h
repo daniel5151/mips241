@@ -4,16 +4,16 @@
 #include <cstdint>
 #include <deque>
 
-#include "mem.h"
+#include "ram.h"
 
 namespace MIPS {
   class BUS {
   private:
-    RAM & mem;
+    RAM & ram;
 
     std::deque<char> inputBuffer;
   public:
-    BUS(RAM & mem);
+    BUS(RAM & ram);
     ~BUS();
 
     uint32_t load (uint32_t addr);

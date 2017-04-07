@@ -10,7 +10,7 @@ obj = $(addprefix $(OBJDIR), $(src:.cc=.o))
 dep = $(addprefix $(DEPDIR), $(src:.cc=.d))
 
 CXX = g++
-CXXFLAGS = -std=c++11 -Wall -pedantic
+CXXFLAGS = -std=c++11 -Wall -Wno-dollar-in-identifier-extension -pedantic
 
 mips241: $(obj)
 	$(CXX) -o $@ $^

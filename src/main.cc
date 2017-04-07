@@ -7,7 +7,7 @@
 
 #include <unistd.h>
 
-#include "mem.h"
+#include "ram.h"
 #include "bus.h"
 #include "cpu.h"
 
@@ -32,21 +32,39 @@ uint32_t readNum(std::istream & in) {
 int main(int argc, char const *argv[]) {
   // Check arguments
   if (argc < 2 || argc > 4) {
-    std::cerr 
-      << "Usage: ./mips241 <filename> [-twoints] [--debug]" 
+    std::cerr
+      << "Usage: ./mips241 <filename> [--cin] [--twoints] [--debug]"
+      << std::endl
+      << std::endl
+      << "  By default, mips241 operates in `mips.array` mode."    << std::endl
+      << "  To switch to `mips.twoints` mode, pass in [--twoints]" << std::endl
+      << std::endl
+      << "    --cin     : Read program from cin"          << std::endl
+      << "    --twoints : operate in `mips.twoints` mode" << std::endl
+      << "    --debug   : enable interactive debug mode"  << std::endl
+      << std::endl
+      << "  Known issues:"  << std::endl
+      << "    - Don't use [--debug] in conjunction with [--cin], it won't work." << std::endl
+      << "    - [--cin] mode doesn't let you input initial register values." << std::endl
+      << "        It's not that it's impossible, i'm just lazy and did not" << std::endl
+      << "        implement it yet :)" << std::endl
+      << std::endl
       << std::endl;
     return -1;
   }
 
   std::string filename;
+  bool use_debug_mode = false;
   bool use_twoints = false;
-  bool debugmode = false;
+  bool use_cin = false;
   for (int i = 1; i < argc; i++) {
     std::string arg = string(argv[i]);
 
+    if (arg == "--twoints") use_twoints = true;
+    if (arg == "--debug" ) use_debug_mode = true;
+    if (arg == "--cin") use_cin = true;
+
     if (i == 1) filename = arg;
-    if (arg == "-twoints") use_twoints = true;
-    if (arg == "--debug" ) debugmode = true;
   }
 
   //--------------------------------- SETUP ---------------------------------//
@@ -56,18 +74,19 @@ int main(int argc, char const *argv[]) {
   MIPS::BUS bus (ram);
   MIPS::CPU cpu (bus);
 
-  // Load program into RAM
-  std::ifstream bin (filename, std::ifstream::binary);
-
-  // Check for IO error
-  if (!bin.is_open()) {
+  // Open file
+  std::ifstream f (filename, std::ifstream::binary);
+  if (!f.is_open() && !use_cin) {
     std::cerr << "Cannot open file `" << filename << "`" << std::endl;
     return -1;
   }
 
-  // This var is also used later to load in user data after program!
-  uint32_t memaddr = 0x0;
-  
+  std::istream &bin = (use_cin) ? std::cin : f;
+
+  // Insert executable into virtual memory
+
+  uint32_t memaddr = 0x0; // base memaddr
+
   char word[4];
   for ever {
     bin.read(word, 4);
@@ -103,6 +122,7 @@ int main(int argc, char const *argv[]) {
     cpu.setRegister(2, arr_length); // $2 = length of array
 
     // Start populating the array 16 words after the end of the program
+    // this was chosen relatively arbitrarilly...
     memaddr += 0x10;
 
     cpu.setRegister(1, memaddr); // $1 = Pointer to base of array
@@ -128,7 +148,7 @@ int main(int argc, char const *argv[]) {
   try {
     std::cerr << "Starting CPU..." << std::endl;
     do {
-      if (debugmode) debugger.debugREPL();
+      if (use_debug_mode) debugger.debugREPL();
 
       // Execute cpu cycle
       cpu.do_cycle();

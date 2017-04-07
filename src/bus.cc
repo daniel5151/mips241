@@ -1,10 +1,10 @@
 #include "bus.h"
-#include "mem.h"
+#include "ram.h"
 
 #include <cstdint>
 #include <iostream>
 
-MIPS::BUS::BUS(MIPS::RAM & mem) : mem(mem) {}
+MIPS::BUS::BUS(MIPS::RAM & ram) : ram(ram) {}
 MIPS::BUS::~BUS() {}
 
 uint32_t MIPS::BUS::load(uint32_t addr) {
@@ -14,14 +14,14 @@ uint32_t MIPS::BUS::load(uint32_t addr) {
       std::string input;
       getline(std::cin, input);
       input += "\n";
-      for (uint32_t i = 0; i < input.length(); i++)
+      for (int i = 0; i < input.length(); i++)
         inputBuffer.push_back(input[i]);
     }
     char in = inputBuffer.front();
     inputBuffer.pop_front();
     return in;
   } else {
-    return mem.load(addr);
+    return ram.load(addr);
   }
 }
 
@@ -30,6 +30,6 @@ void MIPS::BUS::store(uint32_t addr, uint32_t data) {
   if (addr == 0xFFFF000C) {
     std::cout << ((char)data);
   } else {
-    mem.store(addr, data);
+    ram.store(addr, data);
   }
 }

@@ -26,17 +26,17 @@ namespace MIPS {
 
     // ---- Control Variables ---- //
     enum Stage {
-      S_FETCH, 
-      S_DECODE, 
-      S_EXEC, 
-      S_MEMORY, 
+      S_FETCH,
+      S_DECODE,
+      S_EXEC,
+      S_MEMORY,
       S_WBACK
     };
     Stage stage;
 
     // ---- opcodes ---- //
     enum OPCODE {
-      OP_ADD   = 0x00000020,    
+      OP_ADD   = 0x00000020,
       OP_SUB   = 0x00000022,
       OP_SLT   = 0x0000002A,
       OP_SLTU  = 0x0000002B,
@@ -80,11 +80,13 @@ namespace MIPS {
 
     int      getCycle();
     int      getStage();
-    uint32_t getRegister(int reg);
-    uint32_t getiRegister(std::string reg);
     uint32_t getPC();
 
-    void setRegister(int reg, uint32_t val);
+    uint32_t getRegister(int reg);
+    void     setRegister(int reg, uint32_t val);
+
+    uint32_t getiRegister(std::string reg);
+    void     setiRegister(std::string reg, uint32_t val);
 
     void do_cycle();
   };

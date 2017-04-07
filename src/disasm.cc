@@ -8,7 +8,7 @@
   "0x" << std::setfill('0') << std::setw(8) << std::right << std::hex << x << std::dec
 
 enum OPCODE {
-  OP_ADD   = 0x00000020,    
+  OP_ADD   = 0x00000020,
   OP_SUB   = 0x00000022,
   OP_SLT   = 0x0000002A,
   OP_SLTU  = 0x0000002B,
@@ -74,7 +74,7 @@ std::string MIPS::disasm(uint32_t word) {
   }
 
   bool hasImmediateValue = (word >> 26) != 0;
-  uint32_t opcode = (hasImmediateValue) 
+  uint32_t opcode = (hasImmediateValue)
     ? word & 0xFC000000   // Mask off all register identifiers + immediate bits
     : word & 0x0000003F;  // Mask off all register identifiers
 
@@ -84,16 +84,16 @@ std::string MIPS::disasm(uint32_t word) {
       case OP_DIV:
       case OP_DIVU:
         // 2 src
-        instr_ss 
+        instr_ss
           << opcode2str(opcode) << " "
           << "$" << (int)$s
           << ", "
           << "$" << (int)$t;
         break;
       case OP_BEQ:
-      case OP_BNE: 
+      case OP_BNE:
         // 2 src + immediate
-        instr_ss 
+        instr_ss
           << opcode2str(opcode) << " "
           << "$" << (int)$s
           << ", "
@@ -104,7 +104,7 @@ std::string MIPS::disasm(uint32_t word) {
 
       case OP_LW:
         // 1 source + immediate + 1 dst
-        instr_ss 
+        instr_ss
           << opcode2str(opcode) << " "
           << "$" << (int)$t
           << ", "
@@ -115,7 +115,7 @@ std::string MIPS::disasm(uint32_t word) {
         break;
       case OP_SW:
         // 2 source + immediate
-        instr_ss 
+        instr_ss
           << opcode2str(opcode) << " "
           << "$" << (int)$t
           << ", "
@@ -125,12 +125,12 @@ std::string MIPS::disasm(uint32_t word) {
           << ")";
         break;
 
-      case OP_ADD:    
+      case OP_ADD:
       case OP_SUB:
       case OP_SLT:
       case OP_SLTU:
         // 2 sources, 1 dst
-        instr_ss 
+        instr_ss
           << opcode2str(opcode) << " "
           << "$" << (int)$d
           << ", "
@@ -143,14 +143,14 @@ std::string MIPS::disasm(uint32_t word) {
       case OP_MFLO:
       case OP_LIS:
         // 1 dst
-        instr_ss 
+        instr_ss
           << opcode2str(opcode) << " "
           << "$" << (int)$d;
         break;
       case OP_JALR:
       case OP_JR:
         // 1 src
-        instr_ss 
+        instr_ss
           << opcode2str(opcode) << " "
           << "$" << (int)$s;
         break;

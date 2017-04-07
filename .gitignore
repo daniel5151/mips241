@@ -1,9 +1,13 @@
+# OSX
 .DS_Store
 
-/localtesting/
+# Assembler
+/_asm/
 
+# Executables
 /_disasm/disasm
-
 /mips241
+
+# Compilation Artifacts
 /src/.d/
 /src/.o/

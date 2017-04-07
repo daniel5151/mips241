@@ -10,7 +10,7 @@
 #include <map>
 
 #include "bus.h"
-#include "mem.h"
+#include "ram.h"
 #include "cpu.h"
 
 #include "disasm.h"
@@ -45,14 +45,14 @@ void Debugger::printRAMFrom(uint32_t addr, int n) {
     << "     ADDR    |   HEXVAL   :     MIPS ASM    " << endl
     << "  -----------|------------------------------" << endl;
 
-  while (n > 0) { 
-    cerr 
+  while (n > 0) {
+    cerr
       << ( (higlight.count(addr) != 0) ? higlight[addr] : ' ') << " "
-      << toHex(addr) 
+      << toHex(addr)
       << " | "
       << toHex(ram.load(addr))
-      << " : " 
-      << disasm(ram.load(addr)) 
+      << " : "
+      << disasm(ram.load(addr))
       << endl;
 
     addr += 4;
@@ -67,45 +67,45 @@ void Debugger::printCPUState() {
     if (i % 4 - 1 == 0 && i != 0)
       cerr << endl;
 
-    cerr 
-      << setfill(' ') << ( (i % 4 - 1 != 0) ? "   " : "" ) << "$" 
-      << setw(2) << left << dec << i 
+    cerr
+      << setfill(' ') << ( (i % 4 - 1 != 0) ? "   " : "" ) << "$"
+      << setw(2) << left << dec << i
       << " = " << toHex(cpu.getRegister(i));
   }
 
   cerr <<  endl;
-  cerr 
+  cerr
     << " PC = " << toHex(cpu.getiRegister("PC"))
     << "   "
     << " IR = " << toHex(cpu.getiRegister("IR"))
-    << endl 
+    << endl
     << endl;
 
-  cerr 
+  cerr
     << " hi = " << toHex(cpu.getiRegister("hi")) << "   "
     << " lo = " << toHex(cpu.getiRegister("lo"))
-    << endl 
+    << endl
     << endl;
 
-  cerr 
+  cerr
     << " RA = " << toHex(cpu.getiRegister("RA")) << "   "
-    << " RB = " << toHex(cpu.getiRegister("RB")) 
+    << " RB = " << toHex(cpu.getiRegister("RB"))
     << endl;
-  cerr 
+  cerr
     << " RZ = " << toHex(cpu.getiRegister("RZ"))
     << endl;
-  cerr 
+  cerr
     << " RM = " << toHex(cpu.getiRegister("RM"))
     << endl;
-  cerr 
+  cerr
     << " RY = " << toHex(cpu.getiRegister("RY"))
     << endl;
 
   cerr << "Stage: " << cpu.getStage() << endl;
 
   cerr
-    << "Cycle no. " 
-    << dec << cpu.getCycle() 
+    << "Cycle no. "
+    << dec << cpu.getCycle()
     << endl;
 
 }
@@ -138,7 +138,7 @@ void Debugger::print_progRAM() {
   oldHiglight = (oldHiglight_existed) ? higlight[currentPC] : ' ';
 
   higlight[currentPC] = '>';
-  uint32_t startAddr = ((int)currentPC - 0x20 >= 0x0) 
+  uint32_t startAddr = ((int)currentPC - 0x20 >= 0x0)
     ? currentPC - 0x20
     : 0x0;
   printRAMFrom(startAddr, 16);
@@ -166,9 +166,9 @@ void Debugger::debugPrint() {
       << "     ADDR    |   HEXVAL   " << endl
       << "  -----------|------------" << endl;
     for (auto addr : watch) {
-      cerr 
+      cerr
         << "  "
-        << toHex(addr) 
+        << toHex(addr)
         << " | "
         << toHex(ram.load(addr))
         << endl
@@ -212,15 +212,15 @@ void Debugger::debugREPL() {
 
     string tok;
     while (in_ss >> tok) {
-      if (tok == "step") { 
-        step = true;  return; 
-      } 
-      else if (tok == "run")  { 
-        step = false; 
+      if (tok == "step") {
+        step = true;  return;
+      }
+      else if (tok == "run")  {
+        step = false;
 
         // "clear" screen
         cerr << string(100, '\n');
-        return; 
+        return;
       }
       else if (tok == "+bp") {
         uint32_t bp_addr;
@@ -242,7 +242,7 @@ void Debugger::debugREPL() {
       else if (tok == "poke") {
         uint32_t memaddr;
         uint32_t new_val;
-        in_ss 
+        in_ss
           >> hex >> memaddr
           >> hex >> new_val;
 
