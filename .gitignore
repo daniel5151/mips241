@@ -1,6 +1,16 @@
-node_modules
-
+# OSX
 .DS_Store
 
+# Assembler
+/_asm/
+
+# Executables
 /_disasm/disasm
-/_asm
+/mips241
+
+# Compilation Artifacts
+/src/.d/
+/src/.o/
+
+# node.js
+node_modules
