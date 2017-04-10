@@ -13,7 +13,7 @@
 #include "ram.h"
 #include "cpu.h"
 
-#include "disasm.h"
+#include "../_disasm/disasm.h"
 
 using namespace std;
 using namespace MIPS;
@@ -176,6 +176,14 @@ void Debugger::debugPrint() {
 
     }
   }
+}
+
+void Debugger::addhiglight(uint32_t addr) {
+  higlight[addr] = '>';
+}
+
+void Debugger::removehiglight(uint32_t addr) {
+  higlight[addr] = ' ';
 }
 
 void Debugger::debugREPL() {
