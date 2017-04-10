@@ -1,6 +1,5 @@
 # mips241 - emscripten'd
 
-
 ## What is this?
 
 This is an experimental branch where I'm playing around with emscripten, and
@@ -34,4 +33,3 @@ lis   $20
 becomes `198688 32798754 2917269504 337706998`
 
 _You may have to edit the_ `Makefile` _to get it to build properly_.
-
