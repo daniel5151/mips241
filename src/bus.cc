@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <iostream>
 
-MIPS::BUS::BUS(MIPS::RAM & ram) : ram(ram) {}
+MIPS::BUS::BUS(MIPS::RAM & ram) : ram(ram), outputBuffer("") {}
 MIPS::BUS::~BUS() {}
 
 uint32_t MIPS::BUS::load(uint32_t addr) {
@@ -28,8 +28,14 @@ uint32_t MIPS::BUS::load(uint32_t addr) {
 void MIPS::BUS::store(uint32_t addr, uint32_t data) {
   // Check if we are using any memory mapped I/O
   if (addr == 0xFFFF000C) {
-    std::cout << ((char)data);
+    outputBuffer = std::string(1, (char)data);
   } else {
     ram.store(addr, data);
   }
+}
+
+std::string MIPS::BUS::getOutput() {
+  std::string out = outputBuffer;
+  outputBuffer = ""; // clear internal buffer
+  return out;
 }

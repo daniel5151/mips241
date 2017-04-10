@@ -21,9 +21,9 @@ uint32_t readNum(std::istream & in) {
   in >> n_str;
   std::stringstream n_ss (n_str);
 
-  bool isDec = (n_str.length() < 2) || (n_str[0] != '0');
+  bool isDec = !(n_str[0] == '0' && n_str[1] == 'x') && !(n_str[1] == '0' && n_str[2] == 'x');
 
-  uint32_t x;
+  long int x;
   n_ss >> ( (isDec) ? std::dec : std::hex ) >> x;
 
   return x;
@@ -152,6 +152,9 @@ int main(int argc, char const *argv[]) {
 
       // Execute cpu cycle
       cpu.do_cycle();
+
+      std::cout << bus.getOutput();
+
     } while (cpu.stillExecuting());
 
     std::cerr
