@@ -1,4 +1,6 @@
-import getCPP from './emuwrapper';
+import getCPP from './emscripten_wrapper';
+
+import _ from 'lodash';
 
 /*=================================
 =            Utilities            =
@@ -13,6 +15,27 @@ function getLineNumberFrom(code) {
       ? results[0].ln_no
       : -1;
   };
+}
+
+function callFunc(addr) {
+  return `
+    ; store return addr on stack
+    sw      $31, -4($30)
+    lis     $31
+    .word   4
+    sub     $30, $30, $31
+
+    ; call print
+    lis     $31
+    .word   ${addr}
+    jalr    $31
+
+    ; restore return addr
+    lis     $31
+    .word   4
+    add     $30, $30, $31
+    lw      $31, -4($30)
+  `;
 }
 
 function processError(err, code) {
@@ -88,14 +111,57 @@ function processError(err, code) {
   };
 }
 
+const PRINTADDR = 0xFFFF8000;
+
+const macros = {
+  print: code => {
+    return code.replace(
+      /print! (\$\d+)/g,
+      (match, p1, offset) => {
+        if (p1 === "$1") {
+          return `
+            add $1, $0, ${p1}
+            ${callFunc(PRINTADDR)}
+          `;
+        }
+
+        // Otherwise, we need to save $1 on the stack first
+        return `
+          ; store $1 register on stack
+          sw      $1, -4($30)
+          lis     $1
+          .word   4
+          sub     $30, $30, $1
+
+          add     $1, $0, ${p1}
+          ${callFunc(PRINTADDR)}
+
+          ; restore $1 register
+          lis     $1
+          .word   4
+          add     $30, $30, $1
+          lw      $1, -4($30)
+        `;
+      }
+    );
+  }
+};
+
 /*======================================
 =            Exported Funcs            =
 ======================================*/
 
+function preprocess(code) {
+  return _.reduce(macros, (newCode, f, name) => {
+    console.log(`applying the "${name}!" macro`);
+    return f(newCode);
+  }, code);
+}
+
 export async function assemble(code: string) : Array<number> {
   const cpp = await getCPP();
   try {
-    return cpp.MIPS$$asm(code)
+    return cpp.MIPS$$asm(preprocess(code))
       .split(" ")
       .filter((x, i, a) => i !== a.length - 1) // drop empty last element
       // .map(x => { console.log(x); return x; })
@@ -105,7 +171,60 @@ export async function assemble(code: string) : Array<number> {
   }
 }
 
-export async function getEmu({onSTDOUT, onSTDERR}) {
+const getCPUProxy = cpu => {
+  return new Proxy({
+    // General Purpose Registers
+    ..._.reduce(_.range(0, 32), (a, v) => ({ ...a, [v]: 0 }), {}),
+    // Special Registers
+    RA: 0, RB: 0, RZ: 0, RM: 0, RY: 0, IR: 0, PC: 0, hi: 0, lo: 0,
+  }, {
+    get: (target, reg) => {
+      if (!_.has(target, reg))
+        throw `Cannot Get Register ${reg}!`;
+
+      if (isNaN(_.toNumber(reg))) {
+        target[reg] = cpu.getiRegister(reg);
+      } else {
+        target[reg] = cpu.getRegister(_.toNumber(reg));
+      }
+
+      return target[reg];
+    },
+    set: (target, reg, val) => {
+      if (!_.has(target, reg))
+        throw `Cannot Set Register ${reg}!`;
+
+      if (isNaN(_.toNumber(reg))) {
+        cpu.setiRegister(reg, _.toNumber(val));
+        target[reg] = val;
+      } else {
+        cpu.setRegister(_.toNumber(val), _.toNumber(val));
+        target[reg] = val;
+      }
+
+      return true;
+    }
+  });
+};
+
+const getRAMProxy = ram => {
+  return new Proxy({}, {
+    get: (t, addr) => {
+      if (addr % 4 !== 0)
+        throw `Cannot Peek Memaddr 0x${addr.toString(16)}, as it isn't word aligned!`;
+
+      return ram.load(_.toNumber(addr));
+    },
+    set: (t, addr, val) => {
+      if (addr % 4 !== 0)
+        throw `Cannot Poke Memaddr 0x${addr.toString(16)}, as it isn't word aligned!`;
+      ram.store(_.toNumber(addr), _.toNumber(val));
+      return true;
+    }
+  });
+};
+
+export async function getEmu({ onSTDOUT, onSTDERR }) {
   const cpp = await getCPP();
 
   const ram = new cpp.MIPS$$RAM();
@@ -118,5 +237,11 @@ export async function getEmu({onSTDOUT, onSTDERR}) {
   cpp.print    = onSTDOUT || (s => console.log(s));
   cpp.printErr = onSTDERR || (s => console.error(s));
 
-  return { ram, bus, cpu, debug };
+  return {
+    ram, bus, cpu, debug,
+    proxy: {
+      cpu: getCPUProxy(cpu),
+      ram: getRAMProxy(ram),
+    }
+  };
 }
