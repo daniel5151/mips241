@@ -21,11 +21,19 @@ var FileSizeReporter = require('react-dev-utils/FileSizeReporter');
 var measureFileSizesBeforeBuild = FileSizeReporter.measureFileSizesBeforeBuild;
 var printFileSizesAfterBuild = FileSizeReporter.printFileSizesAfterBuild;
 
+var recursive = require('recursive-readdir');
+var stripAnsi = require('strip-ansi');
+var { highlight } = require('cli-highlight');
+
 var useYarn = fs.existsSync(paths.yarnLockFile);
 
 // Warn and crash if required files are missing
 if (!checkRequiredFiles([paths.appHtml, paths.appIndexJs])) {
   process.exit(1);
+}
+
+function padLeft(n, nr, str = ' '){
+    return Array(n-String(nr).length+1).join(str)+nr;
 }
 
 // First, read the current file sizes in build directory.
@@ -47,8 +55,36 @@ function printErrors(summary, errors) {
   console.log(chalk.red(summary));
   console.log();
   errors.forEach(err => {
+    let linePointer;
+    if (err.loaderSource === 'ts-loader') {
+      if (err.file) {
+        const { line, character } = err.location;
+        const longestLineNumber = Array.from({ length: 7 }).map((_, i) => (line - 3) + i).reduce((a, b) => String(a).length === String(b).length ? String(a).length : String(a).length > String(b).length ? String(a).length : String(b).length);
+        const fileContent = highlight(fs.readFileSync(err.file, 'utf8'), { language: 'typescript' })
+          .split('\n');
+        const before = fileContent.slice(line - 4, line)
+          .reduce((lines, code, i) => 
+              lines.concat(`${padLeft(longestLineNumber, (line - 4) + (i + 1))} | ${code}`)
+              , [])
+        const pointer = Array.from({ length: character + 4 }).map(() => '-').concat('^');
+        const after = fileContent.slice(line, line + 4)
+          .reduce((lines, code, i) => 
+              lines.concat(`${padLeft(longestLineNumber, (line) + (i + 1))} | ${code}`)
+              , [])
+
+        console.log('Error in ' + err.file);
+        linePointer = before.concat(pointer.join('')).concat(after).join('\n');
+      } else if (err.module) {
+        console.log('Error in ' + err.module.userRequest);
+      }
+    }
+
     console.log(err.message || err);
     console.log();
+    if (linePointer) {
+      console.log(linePointer);
+      console.log();
+    }
   });
 }
 
@@ -79,7 +115,6 @@ function build(previousFileSizes) {
     printFileSizesAfterBuild(stats, previousFileSizes);
     console.log();
 
-    var openCommand = process.platform === 'win32' ? 'start' : 'open';
     var appPackage  = require(paths.appPackageJson);
     var publicUrl = paths.publicUrl;
     var publicPath = config.output.publicPath;
@@ -138,15 +173,14 @@ function build(previousFileSizes) {
       }
       var build = path.relative(process.cwd(), paths.appBuild);
       console.log('The ' + chalk.cyan(build) + ' folder is ready to be deployed.');
-      console.log('You may also serve it locally with a static server:')
+      console.log('You may serve it with a static server:');
       console.log();
       if (useYarn) {
-        console.log('  ' + chalk.cyan('yarn') +  ' global add pushstate-server');
+        console.log(`  ${chalk.cyan('yarn')} global add serve`);
       } else {
-        console.log('  ' + chalk.cyan('npm') +  ' install -g pushstate-server');
+        console.log(`  ${chalk.cyan('npm')} install -g serve`);
       }
-      console.log('  ' + chalk.cyan('pushstate-server') + ' ' + build);
-      console.log('  ' + chalk.cyan(openCommand) + ' http://localhost:' + (process.env.PORT || 9000));
+      console.log(`  ${chalk.cyan('serve')} -s build`);
       console.log();
     }
   });

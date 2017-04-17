@@ -68,7 +68,6 @@ module.exports = {
     publicPath: publicPath
   },
   resolve: {
-    root: paths.appSrc,
     // This allows you to set a fallback for where Webpack should look for modules.
     // We read `NODE_PATH` environment variable in `paths.js` and pass paths here.
     // We use `fallback` instead of `root` because we want `node_modules` to "win"
@@ -79,14 +78,18 @@ module.exports = {
     // We also include JSX as a common component filename extension to support
     // some tools, although we do not recommend using it, see:
     // https://github.com/facebookincubator/create-react-app/issues/290
-    extensions: ['.js', '.json', '.jsx', ''],
+    extensions: ['.ts', '.tsx', '.js', '.json', '.jsx', ''],
     alias: {
       // Support React Native Web
       // https://www.smashingmagazine.com/2016/08/a-glimpse-into-the-future-with-react-native-for-web/
       'react-native': 'react-native-web',
-      // Relative imports!
       '~': paths.appSrc,
     }
+  },
+  resolveLoader: {
+    alias: {
+      'mips-loader': paths.appSrc + '/../config/loaders/mips-loader',
+    },
   },
 
   module: {
@@ -94,9 +97,9 @@ module.exports = {
     // It's important to do this before Babel processes the JS.
     preLoaders: [
       {
-        test: /\.(js|jsx)$/,
-        loader: 'eslint',
-        include: paths.appSrc
+        test: /\.(ts|tsx)$/,
+        loader: 'tslint',
+        include: paths.appSrc,
       }
     ],
     loaders: [
@@ -112,10 +115,12 @@ module.exports = {
         exclude: [
           /\.html$/,
           /\.(js|jsx)$/,
+          /\.(ts|tsx)$/,
           /\.css$/,
           /\.json$/,
           /\.svg$/,
-          /\.asm$/
+          /\.(mips|merl)$/,
+          /\.asm/,
         ],
         loader: 'url',
         query: {
@@ -123,16 +128,11 @@ module.exports = {
           name: 'static/media/[name].[hash:8].[ext]'
         }
       },
+      // Compile .tsx?
       {
-        test: /\.asm$/,
-        loader: 'raw-loader'
-      },
-      // Process JS with Babel.
-      {
-        test: /\.(js|jsx)$/,
+        test: /\.(ts|tsx)$/,
         include: paths.appSrc,
-        loader: 'babel',
-
+        loader: 'ts',
       },
       // The notation here is somewhat confusing.
       // "postcss" loader applies autoprefixer to our CSS.
@@ -168,12 +168,19 @@ module.exports = {
         query: {
           name: 'static/media/[name].[hash:8].[ext]'
         }
+      },
+      {
+        test: /\.(mips|merl)$/,
+        loader: 'mips-loader'
+      },
+      {
+        test: /\.asm$/,
+        loader: 'raw'
       }
       // ** STOP ** Are you adding a new loader?
       // Remember to add the new extension(s) to the "url" loader exclusion list.
     ]
   },
-
   // We use PostCSS for autoprefixing only.
   postcss: function() {
     return [

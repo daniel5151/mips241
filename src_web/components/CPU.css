@@ -1,0 +1,15 @@
+.cpu-view {
+  flex: 0.5;
+  color: white;
+  background-color: #272822;
+  border-top: 1px solid #555651;
+  padding: 8px;
+  font-family: monospace;
+  font-size: 15px;
+}
+
+.cpu-view__register {
+  display: inline-block;
+  width: 25%;
+  margin-bottom: 4px;
+}

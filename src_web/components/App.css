@@ -1,67 +1,63 @@
-/**/
-
 .App {
   display: flex;
   flex-direction: column;
 
   position: absolute;
-  width: 100%;
-  height: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
 
 #codeeditor {
   flex: 1;
 }
 
+.control {
+  color: #cfcfc2;
+  background: #222222;
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  border-top: 1px solid #555651;
+  font-family: monospace;
+}
+
 .output {
   color: #cfcfc2;
   background: #222222;
   padding: 8px;
-  height: 250px;
-  overflow: scroll;
+  height: 200px;
+  overflow-y: scroll;
   word-wrap: break-word;
   border-top: 1px solid #555651;
 }
 
-.run {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  color: white;
-  padding: 10px;
-  border: 2px solid white;
-  margin: 8px;
-  z-index: 999;
+.register-in {
+    margin-left: 16px;
+    border-bottom: 1px solid #cfcfc2;
 }
 
-.input {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  margin: 8px;
-  padding: 8px;
-  background-color: rgba(34, 34, 34, 1);
-  border: 2px solid white;
+.register-in span {
+    font-style: italic;
+    margin-right: 10px;
 }
 
-.input label {
-  color: white;
-}
-
-.input input {
+.register-in input {
   outline-width: 0;
-  margin: 0 12px;
   background-color: transparent;
   border: none;
-  border-bottom: 2px solid white;
-  color: white;
+  color: #cfcfc2;
   text-align: right;
   font-size: 16px;
   line-height: 1.4;
+  width: 100px;
+  font-family: monospace;
 }
 
-input[type=number]::-webkit-inner-spin-button,
-input[type=number]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
+.run {
+  border: 1px solid #cfcfc2;
+  padding: 4px 10px;
+  line-height: 1.4;
+  cursor: pointer;
 }
