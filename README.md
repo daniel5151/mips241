@@ -110,6 +110,20 @@ print             - display debug data
 Also included is a standalone disassembler. Give it your `.mips` or `.merl`
 files, and it'll spit out a `.asm` file.
 
+
+# UW CS Environment
+
+### Setup
+* Run `git clone https://github.com/daniel5151/mips241 ~/cs241/mips241` in the home directory
+* Run `make ~/cs241/mips241/src/`
+* Run `echo "alias mips="~/cs241/mips241/src/mips241"" >> ~/.profile"`
+* Restart SSH connection and you're all set!
+
+### Usage
+* `java cs241.binasm < {FILENAME}.asm > {FILENAME}.mips` to generate a `.mips`
+* `mips <filepath of .mips file>`
+* `mips` for more options
+
 # Trivia
 
 `mips241` uses the same processor datapath as taught in ECE 222.
@@ -129,3 +143,4 @@ it's free ¯\\\_(ツ)\_/¯
 
 **Also, Feel free to modify this code however you like!<br>
 If you improve `mips241` or fix a bug, open a a Pull Request!**
+
