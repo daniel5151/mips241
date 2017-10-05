@@ -114,7 +114,7 @@ files, and it'll spit out a `.asm` file.
 # UW CS Environment
 
 ### Setup
-* Run `git clone https://github.com/daniel5151/mips241 ~/cs241/mips241` in the home directory
+* Run `git clone https://github.com/daniel5151/mips241 ~/cs241/mips241`
 * Run `make ~/cs241/mips241/src/`
 * Run `echo "alias mips="~/cs241/mips241/src/mips241"" >> ~/.profile"`
 * Restart SSH connection and you're all set!
