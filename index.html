@@ -515,6 +515,28 @@ print             - display debug data
         <code>.asm</code> file.
       </p>
 
+      <h1> UW CS Environment </h1>
+
+      <h3> Setup </h3>
+
+      <ul>
+        <li>Run <code>git clone https://github.com/daniel5151/mips241
+            ~/cs241/mips241</code></li>
+        <li>Run <code>make ~/cs241/mips241/src/</code></li>
+        <li>Run <code>echo "alias mips="~/cs241/mips241/src/mips241"" &#62;&#62;
+            ~/.profile"</code></li>
+        <li>Restart SSH connection and you're all set!</li>
+      </ul>
+
+      <h3> Usage </h3>
+
+      <ul>
+        <li><code>java cs241.binasm < {FILENAME}.asm > {FILENAME}.mips</code> to
+          generate a <code>.mips</code></li>
+        <li><code>mips &#60;filepath of .mips file&#62;</code></li>
+        <li><code>mips</code> for more options</li>
+      </ul>
+
       <h1>Trivia</h1>
       <p><code>mips241</code> uses the same processor datapath as taught in ECE 222.</p>
       <p>Why?</p>

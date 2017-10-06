@@ -33,3 +33,16 @@ lis   $20
 becomes `198688 32798754 2917269504 337706998`
 
 _You may have to edit the_ `Makefile` _to get it to build properly_.
+
+# UW CS Environment
+
+### Setup
+* Run `git clone https://github.com/daniel5151/mips241 ~/cs241/mips241`
+* Run `make ~/cs241/mips241/src/`
+* Run `echo "alias mips="~/cs241/mips241/src/mips241"" >> ~/.profile"`
+* Restart SSH connection and you're all set!
+
+### Usage
+* `java cs241.binasm < {FILENAME}.asm > {FILENAME}.mips` to generate a `.mips`
+* `mips <filepath of .mips file>`
+* `mips` for more options
