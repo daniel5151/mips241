@@ -1,4 +1,13 @@
 # mips241
+
+## WARNING - This project is DEPRECATED
+
+Please check out [uwmips](https://github.com/daniel5151/uwmips), an updated emulator with the same features as mips241, _and more!_
+
+For example, uwmips has a _time travelling debugger_, so not only can you step forward, _but you can also step backwards!_
+
+---
+
 ### A MIPS system emulator for CS 241 @ uWaterloo
 
 **TL;DR: Faster than `java mips.array` / `java mips.twoints`, and also a
